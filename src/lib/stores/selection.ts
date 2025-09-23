@@ -83,3 +83,16 @@ export function clearSelection(): void {
     pattern: 'triadic',
   });
 }
+
+// 主色と提案色を直接設定（シェア復元用）
+export function setPaletteDirectly(
+  primaryDye: Dye,
+  suggestedDyes: [Dye, Dye],
+  pattern: HarmonyPattern
+): void {
+  selectionStore.set({
+    primaryDye,
+    suggestedDyes,
+    pattern,
+  });
+}

@@ -1,6 +1,6 @@
 import type { Dye, Favorite, HarmonyPattern } from '$lib/types';
 import { getPatternLabel } from '$lib/constants/patterns';
-import { selectPrimaryDye, updatePattern } from '$lib/stores/selection';
+import { setPaletteDirectly } from '$lib/stores/selection';
 
 interface SharePaletteData {
   p: string; // primary dye id
@@ -127,9 +127,8 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
       return false;
     }
 
-    // ストアに設定
-    selectPrimaryDye(primaryDye);
-    updatePattern(data.pt);
+    // ストアに設定（保存された提案色をそのまま復元）
+    setPaletteDirectly(primaryDye, [secondaryDye1, secondaryDye2], data.pt);
 
     // URLパラメータをクリーンアップ
     const url = new URL(window.location.href);
