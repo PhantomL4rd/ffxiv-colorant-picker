@@ -6,7 +6,6 @@ export interface Dye {
   hsv: HSVColor;
   rgb: RGBColor;
   hex: string;
-  obtainMethod?: string;
 }
 
 // HSV色空間

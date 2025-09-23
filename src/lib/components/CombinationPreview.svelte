@@ -24,9 +24,6 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
               style="background-color: {selectedDye.hex};"
             ></div>
             <h4 class="font-medium text-sm">{selectedDye.name}</h4>
-            {#if selectedDye.obtainMethod}
-              <div class="text-xs text-base-content/70 mt-1">{selectedDye.obtainMethod}</div>
-            {/if}
           </div>
           
           <!-- 提案カララント1 -->
@@ -36,9 +33,6 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
               style="background-color: {suggestedDyes[0].hex};"
             ></div>
             <h4 class="font-medium text-sm">{suggestedDyes[0].name}</h4>
-            {#if suggestedDyes[0].obtainMethod}
-              <div class="text-xs text-base-content/70 mt-1">{suggestedDyes[0].obtainMethod}</div>
-            {/if}
           </div>
           
           <!-- 提案カララント2 -->
@@ -48,9 +42,6 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
               style="background-color: {suggestedDyes[1].hex};"
             ></div>
             <h4 class="font-medium text-sm">{suggestedDyes[1].name}</h4>
-            {#if suggestedDyes[1].obtainMethod}
-              <div class="text-xs text-base-content/70 mt-1">{suggestedDyes[1].obtainMethod}</div>
-            {/if}
           </div>
         </div>
         
