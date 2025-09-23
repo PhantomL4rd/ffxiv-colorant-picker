@@ -68,11 +68,11 @@ function handlePatternChange(event: Event) {
   <!-- 選択中のパターンの説明 -->
   {#each patterns as pattern}
     {#if pattern.value === selectedPattern}
-      <label class="label">
+      <div class="label">
         <span class="label-text-alt text-base-content/70">
           {pattern.description}
         </span>
-      </label>
+      </div>
     {/if}
   {/each}
 </div>
