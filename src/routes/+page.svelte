@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 import type { Dye, HarmonyPattern } from '$lib/types';
-import { dyeStore } from '$lib/stores/dyes';
+import { dyeStore, loadDyes } from '$lib/stores/dyes';
 import { selectionStore, selectPrimaryDye, updatePattern } from '$lib/stores/selection';
 import { filterStore, filteredDyes, toggleCategory, resetFilters } from '$lib/stores/filter';
 import { generateSuggestedDyes } from '$lib/utils/colorHarmony';
@@ -24,9 +24,7 @@ const selectedCategory = $derived($filterStore.categories);
 
 onMount(async () => {
   try {
-    const response = await fetch('/data/dyes.json');
-    const dyesData = await response.json();
-    dyeStore.set(dyesData.dyes);
+    await loadDyes();
     isLoading = false;
   } catch (error) {
     console.error('カララントデータの読み込みに失敗しました:', error);
