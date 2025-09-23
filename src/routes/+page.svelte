@@ -165,7 +165,7 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
     {/if}
   </div>
 </div>
-
+<div class="text-xs text-gray-400 text-center py-2">FINAL FANTASYは、株式会社スクウェア・エニックス・ホールディングスの登録商標です。</div>
 <style>
   :global(body) {
     margin: 0;
