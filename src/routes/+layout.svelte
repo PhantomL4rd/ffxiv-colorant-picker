@@ -5,7 +5,7 @@ const { children } = $props();
 
 const siteName = 'FF14 カララントピッカー';
 const siteDescription = 'FF14のカララント（染料）から3色の組み合わせを提案するツールです。';
-const siteUrl = 'https://phantoml4rd.github.io/ffxiv-colorant-picker/'; // 本番URLに変更してください
+const siteUrl = 'https://phantoml4rd.github.io/ffxiv-colorant-picker'; // 本番URLに変更してください
 const ogImage = `${siteUrl}/ogp-img.png`;
 </script>
 
