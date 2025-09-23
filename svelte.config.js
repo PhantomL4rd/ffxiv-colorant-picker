@@ -17,7 +17,7 @@ const config = {
       strict: false
     }),
     paths: {
-      base: process.env.NODE_ENV === 'production' ? '/ffxiv-colorant-picker' : '',
+      base: process.argv.includes('dev') ? '' : process.env.BASE_PATH || '',
     },
   },
 };
