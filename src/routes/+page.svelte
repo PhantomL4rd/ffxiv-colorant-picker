@@ -58,7 +58,6 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
 
 <svelte:head>
   <title>FF14 カララントピッカー</title>
-  <meta name="description" content="FF14のカララントから美しい3色の組み合わせを提案するツールです。" />
 </svelte:head>
 
 <div class="min-h-screen bg-base-100">
