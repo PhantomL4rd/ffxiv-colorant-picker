@@ -6,6 +6,7 @@ export interface Dye {
   hsv: HSVColor;
   rgb: RGBColor;
   hex: string;
+  tags?: string[];
 }
 
 // HSV色空間
@@ -52,6 +53,7 @@ export interface FilterOptions {
   hueRange: [number, number];
   saturationRange: [number, number];
   valueRange: [number, number];
+  excludeMetallic: boolean;
 }
 
 // カララントデータJSONの型

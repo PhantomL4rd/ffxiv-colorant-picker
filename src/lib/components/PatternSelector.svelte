@@ -4,9 +4,11 @@ import type { HarmonyPattern } from '$lib/types';
 interface Props {
   selectedPattern: HarmonyPattern;
   onPatternChange: (pattern: HarmonyPattern) => void;
+  excludeMetallic: boolean;
+  onExcludeMetallicChange: () => void;
 }
 
-const { selectedPattern, onPatternChange }: Props = $props();
+const { selectedPattern, onPatternChange, excludeMetallic, onExcludeMetallicChange }: Props = $props();
 
 const patterns: { value: HarmonyPattern; label: string; description: string }[] = [
   {
@@ -75,4 +77,17 @@ function handlePatternChange(event: Event) {
       </div>
     {/if}
   {/each}
+  
+  <!-- メタリック除外チェックボックス -->
+  <div class="form-control mt-4">
+    <label class="cursor-pointer label justify-start gap-3">
+      <input 
+        type="checkbox" 
+        class="checkbox checkbox-sm" 
+        checked={excludeMetallic}
+        onchange={onExcludeMetallicChange}
+      />
+      <span class="label-text">メタリック系を除外</span>
+    </label>
+  </div>
 </div>

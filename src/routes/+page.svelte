@@ -1,10 +1,9 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 import type { Dye, HarmonyPattern } from '$lib/types';
-import { dyeStore, loadDyes } from '$lib/stores/dyes';
-import { selectionStore, selectPrimaryDye, updatePattern } from '$lib/stores/selection';
-import { filterStore, filteredDyes, toggleCategory, resetFilters } from '$lib/stores/filter';
-import { generateSuggestedDyes } from '$lib/utils/colorHarmony';
+import { loadDyes } from '$lib/stores/dyes';
+import { selectionStore, selectPrimaryDye, updatePattern, regenerateSuggestions } from '$lib/stores/selection';
+import { filterStore, filteredDyes, toggleCategory, resetFilters, toggleExcludeMetallic } from '$lib/stores/filter';
 import { Palette, SwatchBook, Shuffle } from '@lucide/svelte';
 
 import DyeGrid from '$lib/components/DyeGrid.svelte';
@@ -19,9 +18,9 @@ let isLoading = $state(true);
 const selectedDye = $derived($selectionStore.primaryDye);
 const suggestedDyes = $derived($selectionStore.suggestedDyes);
 const selectedPattern = $derived($selectionStore.pattern);
-const dyes = $derived($dyeStore);
 const filteredDyesList = $derived($filteredDyes);
 const selectedCategory = $derived($filterStore.categories);
+const excludeMetallic = $derived($filterStore.excludeMetallic);
 
 onMount(async () => {
   try {
@@ -43,7 +42,7 @@ function handlePatternChange(pattern: HarmonyPattern) {
 
 
 function handleToggleCategory(category: string) {
-  toggleCategory(category);
+  toggleCategory(category as any);
 }
 
 function handleClearCategories() {
@@ -51,9 +50,15 @@ function handleClearCategories() {
 }
 
 function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
-  const [primary, ...suggestions] = randomDyes;
+  const [primary] = randomDyes;
   selectPrimaryDye(primary);
   // 提案は自動生成されるので、ここでは設定しない
+}
+
+function handleExcludeMetallicChange() {
+  toggleExcludeMetallic();
+  // メタリック除外フィルターが変更されたら配色候補を再生成
+  regenerateSuggestions();
 }
 </script>
 
@@ -92,6 +97,8 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
               <PatternSelector 
                 {selectedPattern}
                 onPatternChange={handlePatternChange}
+                {excludeMetallic}
+                onExcludeMetallicChange={handleExcludeMetallicChange}
               />
             </div>
           </div>
