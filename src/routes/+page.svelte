@@ -5,6 +5,7 @@ import { dyeStore, loadDyes } from '$lib/stores/dyes';
 import { selectionStore, selectPrimaryDye, updatePattern } from '$lib/stores/selection';
 import { filterStore, filteredDyes, toggleCategory, resetFilters } from '$lib/stores/filter';
 import { generateSuggestedDyes } from '$lib/utils/colorHarmony';
+import { Palette, SwatchBook, Shuffle } from '@lucide/svelte';
 
 import DyeGrid from '$lib/components/DyeGrid.svelte';
 import CombinationPreview from '$lib/components/CombinationPreview.svelte';
@@ -65,7 +66,10 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
   <div class="navbar bg-primary text-primary-content mb-8">
     <div class="container mx-auto">
       <div class="flex-1">
-        <h1 class="text-xl font-bold">FF14 カララントピッカー</h1>
+        <h1 class="text-xl font-bold flex items-center gap-2">
+          <Palette class="w-6 h-6" />
+          FF14 カララントピッカー
+        </h1>
       </div>
     </div>
   </div>
@@ -122,9 +126,7 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
             <div class="card bg-base-200 shadow-md">
               <div class="card-body text-center">
                 <div class="text-base-content/60">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 3v10a2 2 0 002 2h6a2 2 0 002-2V7M9 7h6M9 11h6m-3 4h3" />
-                  </svg>
+                  <Shuffle class="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p class="text-lg font-medium mb-2">カララントを選択してください</p>
                   <p class="text-sm">
                     カララント一覧から気に入った色を選ぶか、<br />
@@ -150,7 +152,11 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
         <!-- カララント一覧 -->
         <div>
           <div class="card bg-base-200 shadow-md">
-            <div class="card-body">          
+            <div class="card-body">
+              <h2 class="card-title text-lg mb-4 flex items-center gap-2">
+                <SwatchBook class="w-5 h-5" />
+                カララント一覧
+              </h2>
               <div class="max-h-[600px] overflow-y-auto">
                 <DyeGrid 
                   dyes={filteredDyesList}
