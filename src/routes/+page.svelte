@@ -1,9 +1,10 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 import type { Dye, HarmonyPattern, Favorite } from '$lib/types';
-import { loadDyes } from '$lib/stores/dyes';
+import { loadDyes, dyeStore } from '$lib/stores/dyes';
 import { selectionStore, selectPrimaryDye, updatePattern, regenerateSuggestions } from '$lib/stores/selection';
 import { filterStore, filteredDyes, toggleCategory, resetFilters, toggleExcludeMetallic } from '$lib/stores/filter';
+import { restorePaletteFromUrl } from '$lib/utils/shareUtils';
 import { Palette, SwatchBook, Shuffle } from '@lucide/svelte';
 
 import DyeGrid from '$lib/components/DyeGrid.svelte';
@@ -31,6 +32,17 @@ const excludeMetallic = $derived($filterStore.excludeMetallic);
 onMount(async () => {
   try {
     await loadDyes();
+    
+    // URL復元処理
+    const dyes = $dyeStore;
+    if (dyes.length > 0) {
+      const restored = restorePaletteFromUrl(dyes);
+      if (restored) {
+        // パレットが復元された場合、ピッカータブに切り替え
+        activeTab = 'picker';
+      }
+    }
+    
     isLoading = false;
   } catch (error) {
     console.error('カララントデータの読み込みに失敗しました:', error);

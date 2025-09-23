@@ -2,15 +2,17 @@
 import { Edit2, Trash2, Check, X, Calendar, MousePointer } from '@lucide/svelte';
 import type { Favorite } from '$lib/types';
 import CombinationPreview from './CombinationPreview.svelte';
+import ShareButton from './ShareButton.svelte';
 import { deleteFavorite, renameFavorite } from '$lib/stores/favorites';
 import { getPatternLabel } from '$lib/constants/patterns';
 
 interface Props {
   favorite: Favorite;
   onSelect: (favorite: Favorite) => void;
+  onShare: (favorite: Favorite) => void;
 }
 
-let { favorite, onSelect }: Props = $props();
+const { favorite, onSelect, onShare }: Props = $props();
 
 // 編集状態
 let isEditing = $state(false);
@@ -89,6 +91,10 @@ function cancelDelete() {
 
 function handleSelect() {
   onSelect(favorite);
+}
+
+function handleShare() {
+  onShare(favorite);
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -253,15 +259,18 @@ $effect(() => {
       </div>
     </div>
 
-    <!-- 選択ボタン -->
-    <button
-      class="btn btn-primary btn-sm w-full"
-      onclick={handleSelect}
-      disabled={isEditing || isDeleting}
-    >
-      <MousePointer class="w-4 h-4" />
-      この組み合わせを選択
-    </button>
+    <!-- 選択ボタンとシェアボタン -->
+    <div class="flex gap-2">
+      <button
+        class="btn btn-primary btn-sm flex-1"
+        onclick={handleSelect}
+        disabled={isEditing || isDeleting}
+      >
+        <MousePointer class="w-4 h-4" />
+        この組み合わせを選択
+      </button>
+      <ShareButton {favorite} onShare={handleShare} />
+    </div>
 
     <!-- パターン表示 -->
     <div class="text-center mt-2">

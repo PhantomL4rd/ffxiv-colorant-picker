@@ -10,7 +10,6 @@ export async function loadDyes(): Promise<void> {
     // base pathを考慮してフェッチパスを動的に決定
     const basePath = import.meta.env.BASE_URL || '';
     const fetchUrl = `${basePath}data/dyes.json`;
-    console.log('Fetching dyes from:', fetchUrl);
     const response = await fetch(fetchUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch dyes: ${response.status}`);
