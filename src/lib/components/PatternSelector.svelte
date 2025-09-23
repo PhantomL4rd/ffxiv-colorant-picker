@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { HarmonyPattern } from '$lib/types';
+import { PATTERN_OPTIONS } from '$lib/constants/patterns';
 
 interface Props {
   selectedPattern: HarmonyPattern;
@@ -9,39 +10,6 @@ interface Props {
 }
 
 const { selectedPattern, onPatternChange, excludeMetallic, onExcludeMetallicChange }: Props = $props();
-
-const patterns: { value: HarmonyPattern; label: string; description: string }[] = [
-  {
-    value: 'triadic',
-    label: 'バランス',
-    description: 'バランスよく調和した鮮やかな3色',
-  },
-  {
-    value: 'split-complementary',
-    label: 'アクセント',
-    description: 'メインカラーに映える個性的な3色',
-  },
-  {
-    value: 'analogous',
-    label: 'グラデーション',
-    description: '自然につながる優しい3色',
-  },
-  {
-    value: 'monochromatic',
-    label: '同系色',
-    description: '統一感のある落ち着いた3色',
-  },
-  {
-    value: 'similar',
-    label: 'ナチュラル',
-    description: '馴染みやすい近い色味の3色',
-  },
-  {
-    value: 'contrast',
-    label: 'コントラスト',
-    description: 'はっきりとした対比のある3色',
-  },
-];
 
 function handlePatternChange(event: Event) {
   const target = event.target as HTMLSelectElement;
@@ -60,7 +28,7 @@ function handlePatternChange(event: Event) {
     value={selectedPattern}
     onchange={handlePatternChange}
   >
-    {#each patterns as pattern}
+    {#each PATTERN_OPTIONS as pattern}
       <option value={pattern.value}>
         {pattern.label}
       </option>
@@ -68,7 +36,7 @@ function handlePatternChange(event: Event) {
   </select>
   
   <!-- 選択中のパターンの説明 -->
-  {#each patterns as pattern}
+  {#each PATTERN_OPTIONS as pattern}
     {#if pattern.value === selectedPattern}
       <div class="label">
         <span class="label-text-alt text-base-content/70">

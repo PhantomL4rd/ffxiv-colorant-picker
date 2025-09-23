@@ -1,8 +1,9 @@
 <script lang="ts">
 import { Edit2, Trash2, Check, X, Calendar, MousePointer } from '@lucide/svelte';
-import type { Favorite, HarmonyPattern } from '$lib/types';
+import type { Favorite } from '$lib/types';
 import CombinationPreview from './CombinationPreview.svelte';
 import { deleteFavorite, renameFavorite } from '$lib/stores/favorites';
+import { getPatternLabel } from '$lib/constants/patterns';
 
 interface Props {
   favorite: Favorite;
@@ -18,16 +19,6 @@ let isDeleting = $state(false);
 let isRenaming = $state(false);
 let error = $state('');
 
-// パターン名のマッピング
-const patternLabels: Record<HarmonyPattern, string> = {
-  'triadic': 'バランス',
-  'split-complementary': 'アクセント',
-  'analogous': 'グラデーション',
-  'monochromatic': '同系色',
-  'similar': 'ナチュラル',
-  'contrast': 'コントラスト',
-  'random': 'ランダム'
-};
 
 // 作成日時のフォーマット
 function formatDate(dateStr: string): string {
@@ -274,7 +265,7 @@ $effect(() => {
 
     <!-- パターン表示 -->
     <div class="text-center mt-2">
-      <span class="badge badge-outline badge-sm">{patternLabels[favorite.pattern] || favorite.pattern}</span>
+      <span class="badge badge-outline badge-sm">{getPatternLabel(favorite.pattern)}</span>
     </div>
   </div>
 </div>
