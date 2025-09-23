@@ -29,7 +29,7 @@ function isSelected(category: DyeCategory): boolean {
   <div class="flex flex-wrap gap-2">
     {#each categories as category}
       <button
-        class="btn btn-sm {isSelected(category) ? 'btn-primary' : 'btn-outline'}"
+        class="btn btn-xs md:btn-sm {isSelected(category) ? 'btn-primary' : 'btn-outline'}"
         onclick={() => onToggleCategory(category)}
       >
         {category}
@@ -37,7 +37,7 @@ function isSelected(category: DyeCategory): boolean {
     {/each}
     {#if selectedCategory}
       <button 
-        class="btn btn-sm btn-outline"
+        class="btn btn-xs md:btn-sm btn-outline"
         onclick={onClearCategories}
       >
         クリア
