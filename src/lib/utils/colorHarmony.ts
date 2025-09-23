@@ -34,14 +34,17 @@ export function calculateContrast(baseHue: number): [number, number] {
 
 // 最も近い色相の染料を見つける
 export function findNearestDyes(targetHues: number[], dyes: Dye[], excludeDye?: Dye): Dye[] {
+  const availableDyes = dyes.filter(dye => !excludeDye || dye.id !== excludeDye.id);
   const result: Dye[] = [];
+  const usedDyeIds = new Set<string>();
 
   for (const targetHue of targetHues) {
     let closestDye: Dye | null = null;
     let minDifference = Infinity;
 
-    for (const dye of dyes) {
-      if (excludeDye && dye.id === excludeDye.id) continue;
+    for (const dye of availableDyes) {
+      // すでに結果として選ばれている染料はスキップする
+      if (usedDyeIds.has(dye.id)) continue;
 
       const hueDifference = Math.min(
         Math.abs(dye.hsv.h - targetHue),
@@ -56,6 +59,8 @@ export function findNearestDyes(targetHues: number[], dyes: Dye[], excludeDye?: 
 
     if (closestDye) {
       result.push(closestDye);
+      // 見つかった染料のIDを記録し、次の検索で重複しないようにする
+      usedDyeIds.add(closestDye.id);
     }
   }
 
