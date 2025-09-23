@@ -7,7 +7,7 @@ interface Props {
   disabled?: boolean;
 }
 
-let { disabled = false }: Props = $props();
+const { disabled = false }: Props = $props();
 
 // 保存状態
 let isSaving = $state(false);

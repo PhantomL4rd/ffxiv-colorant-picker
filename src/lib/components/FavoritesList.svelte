@@ -3,12 +3,17 @@ import { Heart, Shuffle } from '@lucide/svelte';
 import type { Favorite } from '$lib/types';
 import { favoritesStore, restoreFavorite } from '$lib/stores/favorites';
 import FavoriteItem from './FavoriteItem.svelte';
+import ShareModal from './ShareModal.svelte';
 
 interface Props {
   onSelectFavorite?: (favorite: Favorite) => void;
 }
 
-let { onSelectFavorite }: Props = $props();
+const { onSelectFavorite }: Props = $props();
+
+// ShareModal の状態管理
+let shareModalOpen = $state(false);
+let selectedFavoriteForShare = $state<Favorite | null>(null);
 
 // お気に入り一覧（作成日時順、新しい順）
 const favorites = $derived($favoritesStore);
@@ -32,6 +37,17 @@ function handleSelectFavorite(favorite: Favorite) {
   } catch (error) {
     console.error('お気に入りの復元に失敗しました:', error);
   }
+}
+
+// シェア機能
+function handleShare(favorite: Favorite) {
+  selectedFavoriteForShare = favorite;
+  shareModalOpen = true;
+}
+
+function closeShareModal() {
+  shareModalOpen = false;
+  selectedFavoriteForShare = null;
 }
 </script>
 
@@ -80,6 +96,7 @@ function handleSelectFavorite(favorite: Favorite) {
         <FavoriteItem 
           {favorite}
           onSelect={handleSelectFavorite}
+          onShare={handleShare}
         />
       {/each}
     </div>
@@ -94,6 +111,13 @@ function handleSelectFavorite(favorite: Favorite) {
     {/if}
   {/if}
 </div>
+
+<!-- ShareModal -->
+<ShareModal 
+  isOpen={shareModalOpen}
+  favorite={selectedFavoriteForShare}
+  onClose={closeShareModal}
+/>
 
 <style>
   /* スムーズなスクロール */

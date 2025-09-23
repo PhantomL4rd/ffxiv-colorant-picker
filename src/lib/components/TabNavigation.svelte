@@ -6,7 +6,7 @@ interface Props {
   onTabChange: (tab: 'picker' | 'favorites') => void;
 }
 
-let { activeTab, onTabChange }: Props = $props();
+const { activeTab, onTabChange }: Props = $props();
 
 // 要望/感想リンク
 const feedbackUrl = 'https://jp.finalfantasyxiv.com/lodestone/character/27344914/blog/5609012/';
