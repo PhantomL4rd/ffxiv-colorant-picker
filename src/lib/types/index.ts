@@ -60,3 +60,20 @@ export interface FilterOptions {
 export interface DyeData {
   dyes: Dye[];
 }
+
+// お気に入り
+export interface Favorite {
+  id: string;
+  name: string;
+  primaryDye: Dye;
+  suggestedDyes: [Dye, Dye];
+  pattern: HarmonyPattern;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// LocalStorage用のお気に入りデータ
+export interface FavoritesData {
+  favorites: Favorite[];
+  version: string;
+}

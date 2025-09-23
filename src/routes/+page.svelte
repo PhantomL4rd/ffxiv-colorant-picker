@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import type { Dye, HarmonyPattern } from '$lib/types';
+import type { Dye, HarmonyPattern, Favorite } from '$lib/types';
 import { loadDyes } from '$lib/stores/dyes';
 import { selectionStore, selectPrimaryDye, updatePattern, regenerateSuggestions } from '$lib/stores/selection';
 import { filterStore, filteredDyes, toggleCategory, resetFilters, toggleExcludeMetallic } from '$lib/stores/filter';
@@ -11,8 +11,14 @@ import CombinationPreview from '$lib/components/CombinationPreview.svelte';
 import PatternSelector from '$lib/components/PatternSelector.svelte';
 import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 import RandomPickButton from '$lib/components/RandomPickButton.svelte';
+import TabNavigation from '$lib/components/TabNavigation.svelte';
+import AddToFavoritesButton from '$lib/components/AddToFavoritesButton.svelte';
+import FavoritesList from '$lib/components/FavoritesList.svelte';
 
 let isLoading = $state(true);
+
+// タブ状態管理
+let activeTab = $state<'picker' | 'favorites'>('picker');
 
 // ストアから状態を取得
 const selectedDye = $derived($selectionStore.primaryDye);
@@ -60,6 +66,17 @@ function handleExcludeMetallicChange() {
   // メタリック除外フィルターが変更されたら配色候補を再生成
   regenerateSuggestions();
 }
+
+// タブ切り替えハンドラー
+function handleTabChange(tab: 'picker' | 'favorites') {
+  activeTab = tab;
+}
+
+// お気に入り選択ハンドラー
+function handleSelectFavorite(favorite: Favorite) {
+  // お気に入りが選択されたらピッカータブに切り替え
+  activeTab = 'picker';
+}
 </script>
 
 <svelte:head>
@@ -86,8 +103,10 @@ function handleExcludeMetallicChange() {
         <span class="ml-2">カララントデータを読み込み中...</span>
       </div>
     {:else}
-      <!-- メインコンテンツ -->
-      <div class="space-y-8">
+      <!-- タブコンテンツ -->
+      {#if activeTab === 'picker'}
+        <!-- ピッカータブ：メインコンテンツ -->
+        <div class="space-y-8">
         <!-- フィルターとコントロール -->
         <div class="space-y-6">
           
@@ -120,7 +139,10 @@ function handleExcludeMetallicChange() {
             <!-- 組み合わせプレビュー -->
             <div class="card bg-base-200 shadow-md">
               <div class="card-body">
-                <h2 class="card-title text-lg mb-4">プレビュー</h2>
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="card-title text-lg">プレビュー</h2>
+                  <AddToFavoritesButton disabled={!selectedDye || !suggestedDyes} />
+                </div>
                 <CombinationPreview 
                   selectedDye={selectedDye}
                   suggestedDyes={suggestedDyes}
@@ -174,9 +196,19 @@ function handleExcludeMetallicChange() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      {:else if activeTab === 'favorites'}
+        <!-- お気に入りタブ -->
+        <FavoritesList onSelectFavorite={handleSelectFavorite} />
+      {/if}
     {/if}
   </div>
+  
+  <!-- タブナビゲーション（フッター固定） -->
+  <TabNavigation 
+    {activeTab}
+    onTabChange={handleTabChange}
+  />
 </div>
 <div class="text-xs text-gray-400 text-center py-2">FINAL FANTASYは、株式会社スクウェア・エニックス・ホールディングスの登録商標です。</div>
 <style>
