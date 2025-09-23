@@ -163,7 +163,7 @@ function handleKeydown(event: KeyboardEvent) {
         <div class="flex justify-end gap-3">
           <button
             type="button"
-            class="btn btn-ghost"
+            class="btn btn-soft"
             onclick={onClose}
           >
             閉じる
