@@ -1,6 +1,7 @@
 import type { Dye, Favorite, HarmonyPattern } from '$lib/types';
 import { getPatternLabel } from '$lib/constants/patterns';
 import { setPaletteDirectly } from '$lib/stores/selection';
+import LZString from 'lz-string';
 
 interface SharePaletteData {
   p: string; // primary dye id
@@ -20,9 +21,9 @@ export function generateShareUrl(favorite: Favorite): string {
 
   try {
     const jsonString = JSON.stringify(data);
-    const encodedData = btoa(jsonString);
+    const compressedData = LZString.compressToEncodedURIComponent(jsonString);
     const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('palette', encodedData);
+    currentUrl.searchParams.set('palette', compressedData);
     return currentUrl.toString();
   } catch (error) {
     console.error('Failed to generate share URL:', error);
@@ -56,7 +57,14 @@ export function decodePaletteFromUrl(url: string): SharePaletteData | null {
       return null;
     }
 
-    const jsonString = atob(paletteParam);
+    // 圧縮されたデータを解凍
+    const jsonString = LZString.decompressFromEncodedURIComponent(paletteParam);
+    
+    if (!jsonString) {
+      console.warn('Failed to decompress palette data');
+      return null;
+    }
+
     const data = JSON.parse(jsonString) as SharePaletteData;
 
     // 必須フィールドの検証
