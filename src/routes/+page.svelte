@@ -14,6 +14,7 @@ import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 import RandomPickButton from '$lib/components/RandomPickButton.svelte';
 import TabNavigation from '$lib/components/TabNavigation.svelte';
 import AddToFavoritesButton from '$lib/components/AddToFavoritesButton.svelte';
+import ShareButton from '$lib/components/ShareButton.svelte';
 import FavoritesList from '$lib/components/FavoritesList.svelte';
 
 let isLoading = $state(true);
@@ -153,7 +154,10 @@ function handleSelectFavorite(favorite: Favorite) {
               <div class="card-body">
                 <div class="flex justify-between items-center mb-4">
                   <h2 class="card-title text-lg">プレビュー</h2>
-                  <AddToFavoritesButton disabled={!selectedDye || !suggestedDyes} />
+                  <div class="flex gap-2">
+                    <AddToFavoritesButton disabled={!selectedDye || !suggestedDyes} />
+                    <ShareButton disabled={!selectedDye || !suggestedDyes} />
+                  </div>
                 </div>
                 <CombinationPreview 
                   selectedDye={selectedDye}
