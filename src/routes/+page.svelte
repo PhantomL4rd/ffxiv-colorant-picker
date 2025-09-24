@@ -5,7 +5,7 @@ import { loadDyes, dyeStore } from '$lib/stores/dyes';
 import { selectionStore, selectPrimaryDye, updatePattern, regenerateSuggestions } from '$lib/stores/selection';
 import { filterStore, filteredDyes, toggleCategory, resetFilters, toggleExcludeMetallic } from '$lib/stores/filter';
 import { restorePaletteFromUrl } from '$lib/utils/shareUtils';
-import { Palette, SwatchBook, Shuffle } from '@lucide/svelte';
+import { PaintBucket, Blend, SwatchBook } from '@lucide/svelte';
 
 import DyeGrid from '$lib/components/DyeGrid.svelte';
 import CombinationPreview from '$lib/components/CombinationPreview.svelte';
@@ -119,7 +119,7 @@ function handleClearAll() {
     <div class="container mx-auto">
       <div class="flex-1">
         <h1 class="text-xl font-bold flex items-center gap-2">
-          <Palette class="w-6 h-6" />
+          <SwatchBook class="w-6 h-6" />
           FF14 カララントピッカー
         </h1>
       </div>
@@ -188,7 +188,7 @@ function handleClearAll() {
             <div class="card bg-base-200 shadow-md">
               <div class="card-body text-center">
                 <div class="text-base-content/60">
-                  <Shuffle class="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <Blend class="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p class="text-lg font-medium mb-2">カララントを選択してください</p>
                   <p class="text-sm">
                     カララント一覧から気に入った色を選ぶか、<br />
@@ -225,7 +225,7 @@ function handleClearAll() {
               {:else}
                 <!-- 通常のカララント一覧表示 -->
                 <h2 class="card-title text-lg mb-4 flex items-center gap-2">
-                  <SwatchBook class="w-5 h-5" />
+                  <PaintBucket class="w-5 h-5" />
                   カララント一覧
                 </h2>
                 <div class="max-h-[600px] overflow-y-auto">
