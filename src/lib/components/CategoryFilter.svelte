@@ -5,9 +5,11 @@ interface Props {
   selectedCategory: DyeCategory | null;
   onToggleCategory: (category: DyeCategory) => void;
   onClearCategories: () => void;
+  onSelectCustomColors?: () => void;
+  isCustomColorsSelected?: boolean;
 }
 
-const { selectedCategory, onToggleCategory, onClearCategories }: Props = $props();
+const { selectedCategory, onToggleCategory, onClearCategories, onSelectCustomColors, isCustomColorsSelected = false }: Props = $props();
 
 const categories: DyeCategory[] = [
   '白系',
@@ -23,6 +25,12 @@ const categories: DyeCategory[] = [
 function isSelected(category: DyeCategory): boolean {
   return selectedCategory === category;
 }
+
+function handleCustomColorsClick() {
+  if (onSelectCustomColors) {
+    onSelectCustomColors();
+  }
+}
 </script>
 
 <div class="form-control w-full">  
@@ -35,7 +43,18 @@ function isSelected(category: DyeCategory): boolean {
         {category}
       </button>
     {/each}
-    {#if selectedCategory}
+    
+    <!-- カスタムカラー選択ボタン -->
+    {#if onSelectCustomColors}
+      <button
+        class="btn btn-xs md:btn-sm {isCustomColorsSelected ? 'btn-secondary' : 'btn-outline'}"
+        onclick={handleCustomColorsClick}
+      >
+        あなたの色
+      </button>
+    {/if}
+    
+    {#if selectedCategory || isCustomColorsSelected}
       <button 
         class="btn btn-xs md:btn-sm btn-outline"
         onclick={onClearCategories}

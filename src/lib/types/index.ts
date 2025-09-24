@@ -77,3 +77,47 @@ export interface FavoritesData {
   favorites: Favorite[];
   version: string;
 }
+
+// カスタムカラー
+export interface CustomColor {
+  id: string;
+  name: string;
+  rgb: RGBColor;
+  hsv: HSVColor;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 拡張されたDye（カスタムカラー対応）
+export type DyeSource = 'game' | 'custom';
+
+export interface ExtendedDye extends Dye {
+  source: DyeSource;
+  customColor?: CustomColor;
+}
+
+// カスタムカラー対応シェアデータ
+export interface CustomColorShare {
+  type: 'custom';
+  name: string;
+  rgb: RGBColor;
+  hsv: HSVColor;
+}
+
+export interface ExtendedSharePaletteData {
+  p: string | CustomColorShare;
+  s: [string, string];
+  pt: HarmonyPattern;
+}
+
+// カスタムカラー対応お気に入り
+export interface ExtendedFavorite extends Omit<Favorite, 'primaryDye'> {
+  primaryDye: Dye | CustomColor;
+}
+
+// LocalStorage用のカスタムカラーデータ
+export interface CustomColorsData {
+  colors: CustomColor[];
+  version: string;
+  lastUpdated: string;
+}

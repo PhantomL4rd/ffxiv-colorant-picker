@@ -1,6 +1,7 @@
-import type { Dye, Favorite, HarmonyPattern } from '$lib/types';
+import type { Dye, Favorite, HarmonyPattern, ExtendedDye, CustomColorShare, ExtendedSharePaletteData } from '$lib/types';
 import { getPatternLabel } from '$lib/constants/patterns';
 import { setPaletteDirectly } from '$lib/stores/selection';
+import { isCustomDye } from '$lib/utils/customColorUtils';
 import LZString from 'lz-string';
 
 interface SharePaletteData {
@@ -10,24 +11,55 @@ interface SharePaletteData {
 }
 
 /**
- * お気に入りからシェア用URLを生成
+ * お気に入りからシェア用URLを生成（カスタムカラー対応）
  */
 export function generateShareUrl(favorite: Favorite): string {
-  const data: SharePaletteData = {
-    p: favorite.primaryDye.id,
-    s: [favorite.suggestedDyes[0].id, favorite.suggestedDyes[1].id],
-    pt: favorite.pattern,
-  };
+  // カスタムカラーか通常のカララントか判定
+  const isCustom = favorite.primaryDye.tags?.includes('custom');
+  
+  if (isCustom) {
+    // カスタムカラーの場合は拡張データ形式で保存
+    const customColorShare: CustomColorShare = {
+      type: 'custom',
+      name: favorite.primaryDye.name,
+      rgb: favorite.primaryDye.rgb,
+      hsv: favorite.primaryDye.hsv
+    };
+    
+    const extendedData: ExtendedSharePaletteData = {
+      p: customColorShare,
+      s: [favorite.suggestedDyes[0].id, favorite.suggestedDyes[1].id],
+      pt: favorite.pattern,
+    };
+    
+    try {
+      const jsonString = JSON.stringify(extendedData);
+      const compressedData = LZString.compressToEncodedURIComponent(jsonString);
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('custom-palette', compressedData);
+      return currentUrl.toString();
+    } catch (error) {
+      console.error('Failed to generate custom share URL:', error);
+      return window.location.href;
+    }
+  } else {
+    // 通常のカララントの場合は既存の形式
+    const data: SharePaletteData = {
+      p: favorite.primaryDye.id,
+      s: [favorite.suggestedDyes[0].id, favorite.suggestedDyes[1].id],
+      pt: favorite.pattern,
+    };
 
-  try {
-    const jsonString = JSON.stringify(data);
-    const compressedData = LZString.compressToEncodedURIComponent(jsonString);
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('palette', compressedData);
-    return currentUrl.toString();
-  } catch (error) {
-    console.error('Failed to generate share URL:', error);
-    return window.location.href;
+    try {
+      const jsonString = JSON.stringify(data);
+      const compressedData = LZString.compressToEncodedURIComponent(jsonString);
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('palette', compressedData);
+      return currentUrl.toString();
+    } catch (error) {
+      console.error('Failed to generate share URL:', error);
+      return window.location.href;
+    }
   }
 }
 
@@ -112,10 +144,84 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /**
- * URLパラメータからパレットを復元してストアに設定
+ * カスタムカラーを含むURLからパレットデータを復元
+ */
+export function decodeCustomPaletteFromUrl(url: string): ExtendedSharePaletteData | null {
+  try {
+    const urlObj = new URL(url);
+    const paletteParam = urlObj.searchParams.get('custom-palette');
+    
+    if (!paletteParam) {
+      return null;
+    }
+
+    // 圧縮されたデータを解凍
+    const jsonString = LZString.decompressFromEncodedURIComponent(paletteParam);
+    
+    if (!jsonString) {
+      console.warn('Failed to decompress custom palette data');
+      return null;
+    }
+
+    const data = JSON.parse(jsonString) as ExtendedSharePaletteData;
+
+    // 必須フィールドの検証
+    if (!data.p || !Array.isArray(data.s) || data.s.length !== 2 || !data.pt) {
+      console.warn('Invalid custom palette data structure');
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.warn('Failed to decode custom palette from URL:', error);
+    return null;
+  }
+}
+
+/**
+ * URLパラメータからパレットを復元してストアに設定（カスタムカラー対応）
  */
 export function restorePaletteFromUrl(dyes: Dye[]): boolean {
   try {
+    // まずカスタムパレットを確認
+    const customData = decodeCustomPaletteFromUrl(window.location.href);
+    if (customData) {
+      // カスタムカラーの場合
+      if (typeof customData.p === 'object' && customData.p.type === 'custom') {
+        // カスタムカラーからExtendedDyeを作成
+        const customDye: ExtendedDye = {
+          id: `custom-temp-${Date.now()}`, // 一時的なID
+          name: customData.p.name,
+          category: '白系',
+          hsv: customData.p.hsv,
+          rgb: customData.p.rgb,
+          hex: `#${customData.p.rgb.r.toString(16).padStart(2, '0')}${customData.p.rgb.g.toString(16).padStart(2, '0')}${customData.p.rgb.b.toString(16).padStart(2, '0')}`,
+          tags: ['custom'],
+          source: 'custom'
+        };
+
+        // 提案色を取得
+        const secondaryDye1 = dyes.find(dye => dye.id === customData.s[0]);
+        const secondaryDye2 = dyes.find(dye => dye.id === customData.s[1]);
+
+        if (!secondaryDye1 || !secondaryDye2) {
+          console.warn('Secondary dyes not found');
+          return false;
+        }
+
+        // ストアに設定
+        setPaletteDirectly(customDye, [secondaryDye1, secondaryDye2], customData.pt);
+
+        // URLパラメータをクリーンアップ
+        const url = new URL(window.location.href);
+        url.searchParams.delete('custom-palette');
+        window.history.replaceState({}, '', url.toString());
+
+        return true;
+      }
+    }
+
+    // 通常のパレットを確認
     const data = decodePaletteFromUrl(window.location.href);
     if (!data) {
       return false;

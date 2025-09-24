@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
-import type { Favorite, FavoritesData, Dye, HarmonyPattern } from '$lib/types';
-import { selectionStore, selectPrimaryDye, updatePattern } from './selection';
+import type { Favorite, FavoritesData, Dye, HarmonyPattern, ExtendedDye, CustomColor } from '$lib/types';
+import { selectionStore, selectPrimaryDye, updatePattern, setPaletteDirectly } from './selection';
+import { isCustomDye, extractCustomColor } from '$lib/utils/customColorUtils';
 
 // お気に入りストア
 export const favoritesStore = writable<Favorite[]>([]);
@@ -75,10 +76,10 @@ function saveFavoritesToStorage(favorites: Favorite[]): void {
   }
 }
 
-// お気に入りを保存
+// お気に入りを保存（カスタムカラー対応）
 export function saveFavorite(input: {
   name?: string;
-  primaryDye: Dye;
+  primaryDye: Dye | ExtendedDye;
   suggestedDyes: [Dye, Dye];
   pattern: HarmonyPattern;
 }): void {
@@ -103,10 +104,27 @@ export function saveFavorite(input: {
         }
       }
 
+      // カスタムカラーの場合は通常のDyeとして保存
+      let primaryDyeForStorage: Dye;
+      if (isCustomDye(input.primaryDye)) {
+        // カスタムカラーの場合は簡易的なDyeオブジェクトとして保存
+        primaryDyeForStorage = {
+          id: input.primaryDye.id,
+          name: input.primaryDye.name,
+          category: input.primaryDye.category,
+          hsv: input.primaryDye.hsv,
+          rgb: input.primaryDye.rgb,
+          hex: input.primaryDye.hex,
+          tags: ['custom']
+        };
+      } else {
+        primaryDyeForStorage = input.primaryDye;
+      }
+
       const newFavorite: Favorite = {
         id: generateId(),
         name,
-        primaryDye: input.primaryDye,
+        primaryDye: primaryDyeForStorage,
         suggestedDyes: input.suggestedDyes,
         pattern: input.pattern,
         createdAt: new Date().toISOString()
@@ -178,14 +196,23 @@ export function renameFavorite(favoriteId: string, newName: string): void {
   }
 }
 
-// お気に入りを復元（選択状態に設定）
+// お気に入りを復元（選択状態に設定、カスタムカラー対応）
 export function restoreFavorite(favorite: Favorite): void {
   try {
-    // プライマリ染料を選択（これにより自動的に提案も生成される）
-    selectPrimaryDye(favorite.primaryDye);
-    
-    // パターンも設定
-    updatePattern(favorite.pattern);
+    // カスタムカラーかチェック（tagsにcustomが含まれている場合）
+    if (favorite.primaryDye.tags?.includes('custom')) {
+      // カスタムカラーの場合はExtendedDyeとして扱う
+      const extendedDye: ExtendedDye = {
+        ...favorite.primaryDye,
+        source: 'custom'
+      };
+      // 直接パレットを設定（カスタムカラーの場合は提案色も保存されている）
+      setPaletteDirectly(extendedDye, favorite.suggestedDyes, favorite.pattern);
+    } else {
+      // 通常のカララントの場合
+      selectPrimaryDye(favorite.primaryDye);
+      updatePattern(favorite.pattern);
+    }
   } catch (error) {
     console.error('お気に入りの復元に失敗しました:', error);
     throw error;
