@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Palette, Heart, ExternalLink } from '@lucide/svelte';
+import { SwatchBook, Heart, ExternalLink } from '@lucide/svelte';
 
 interface Props {
   activeTab: 'picker' | 'favorites';
@@ -36,7 +36,7 @@ function openFeedbackLink() {
           onclick={() => handleTabClick('picker')}
           aria-label="カララントピッカー"
         >
-          <Palette class="w-6 h-6 mb-1" />
+          <SwatchBook class="w-6 h-6 mb-1" />
           <span class="text-xs font-medium">ピッカー</span>
         </button>
 
