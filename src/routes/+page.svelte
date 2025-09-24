@@ -75,8 +75,24 @@ function handleClearCategories() {
 
 function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
   const [primary] = randomDyes;
+  
+  // 配色パターンもランダムに選択
+  const patterns: HarmonyPattern[] = [
+    'triadic',
+    'split-complementary',
+    'analogous',
+    'monochromatic',
+    'similar',
+    'contrast',
+    'random'
+  ];
+  const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+  
+  // 配色パターンを先に設定
+  updatePattern(randomPattern);
+  
+  // その後、主色を選択（提案は自動生成される）
   selectPrimaryDye(primary);
-  // 提案は自動生成されるので、ここでは設定しない
 }
 
 function handleExcludeMetallicChange() {
