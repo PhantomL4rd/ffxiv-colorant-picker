@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { Dye } from '$lib/types';
+import { selectPrimaryDye } from '$lib/stores/selection';
 
 interface Props {
   selectedDye: Dye | null;
@@ -8,6 +9,10 @@ interface Props {
 }
 
 const { selectedDye, suggestedDyes, pattern }: Props = $props();
+
+function handleSuggestedDyeClick(dye: Dye): void {
+  selectPrimaryDye(dye);
+}
 
 </script>
 
@@ -28,19 +33,25 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
           
           <!-- 提案カララント1 -->
           <div class="text-center">
-            <div 
-              class="w-full h-20 rounded-lg border-2 border-base-300 mb-2"
+            <button
+              type="button"
+              class="w-full h-20 rounded-lg border-2 border-base-300 mb-2 hover:border-primary transition-colors cursor-pointer"
               style="background-color: {suggestedDyes[0].hex};"
-            ></div>
+              onclick={() => handleSuggestedDyeClick(suggestedDyes[0])}
+              title="この色を選択して新しい組み合わせを提案"
+            ></button>
             <h4 class="font-medium text-sm">{suggestedDyes[0].name}</h4>
           </div>
           
           <!-- 提案カララント2 -->
           <div class="text-center">
-            <div 
-              class="w-full h-20 rounded-lg border-2 border-base-300 mb-2"
+            <button
+              type="button"
+              class="w-full h-20 rounded-lg border-2 border-base-300 mb-2 hover:border-primary transition-colors cursor-pointer"
               style="background-color: {suggestedDyes[1].hex};"
-            ></div>
+              onclick={() => handleSuggestedDyeClick(suggestedDyes[1])}
+              title="この色を選択して新しい組み合わせを提案"
+            ></button>
             <h4 class="font-medium text-sm">{suggestedDyes[1].name}</h4>
           </div>
         </div>

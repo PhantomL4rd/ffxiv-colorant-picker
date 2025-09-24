@@ -4,7 +4,7 @@
   import { selectPrimaryDye } from '$lib/stores/selection';
   import CustomColorForm from './CustomColorForm.svelte';
   import CustomColorItem from './CustomColorItem.svelte';
-  import { Plus } from '@lucide/svelte';
+  import { Plus, Palette } from '@lucide/svelte';
 
   let showForm = $state(false);
   let editingColor = $state<string | null>(null);
@@ -40,7 +40,10 @@
     />
   {:else}
     <div class="flex items-center justify-between">
-      <h3 class="text-lg font-medium">あなたの色</h3>
+      <h3 class="text-lg font-medium flex items-center gap-2">
+        <Palette size={20} />
+        あなたの色
+      </h3>
       <button
         type="button"
         onclick={handleAddNew}
