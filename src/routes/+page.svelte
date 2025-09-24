@@ -16,11 +16,15 @@ import TabNavigation from '$lib/components/TabNavigation.svelte';
 import AddToFavoritesButton from '$lib/components/AddToFavoritesButton.svelte';
 import ShareButton from '$lib/components/ShareButton.svelte';
 import FavoritesList from '$lib/components/FavoritesList.svelte';
+import CustomColorManager from '$lib/components/CustomColorManager.svelte';
 
 let isLoading = $state(true);
 
 // タブ状態管理
 let activeTab = $state<'picker' | 'favorites'>('picker');
+
+// カスタムカラー表示モード管理
+let showCustomColors = $state(false);
 
 // ストアから状態を取得
 const selectedDye = $derived($selectionStore.primaryDye);
@@ -61,6 +65,7 @@ function handlePatternChange(pattern: HarmonyPattern) {
 
 
 function handleToggleCategory(category: string) {
+  showCustomColors = false; // カテゴリ選択時はカスタムカラーを非表示
   toggleCategory(category as any);
 }
 
@@ -89,6 +94,18 @@ function handleTabChange(tab: 'picker' | 'favorites') {
 function handleSelectFavorite(favorite: Favorite) {
   // お気に入りが選択されたらピッカータブに切り替え
   activeTab = 'picker';
+}
+
+// カスタムカラー選択ハンドラー
+function handleSelectCustomColors() {
+  showCustomColors = true;
+  resetFilters(); // 通常カテゴリをクリア
+}
+
+// カテゴリまたはクリアボタンクリック時にカスタムカラーも非表示に
+function handleClearAll() {
+  showCustomColors = false;
+  handleClearCategories();
 }
 </script>
 
@@ -189,26 +206,36 @@ function handleSelectFavorite(favorite: Favorite) {
             <CategoryFilter 
               selectedCategory={selectedCategory}
               onToggleCategory={handleToggleCategory}
-              onClearCategories={handleClearCategories}
+              onClearCategories={handleClearAll}
+              onSelectCustomColors={handleSelectCustomColors}
+              isCustomColorsSelected={showCustomColors}
             />
           </div>
         </div>
         
-        <!-- カララント一覧 -->
+        <!-- カララント一覧またはカスタムカラー管理 -->
         <div>
           <div class="card bg-base-200 shadow-md">
             <div class="card-body">
-              <h2 class="card-title text-lg mb-4 flex items-center gap-2">
-                <SwatchBook class="w-5 h-5" />
-                カララント一覧
-              </h2>
-              <div class="max-h-[600px] overflow-y-auto">
-                <DyeGrid 
-                  dyes={filteredDyesList}
-                  {selectedDye}
-                  onDyeSelect={handleDyeSelect}
-                />
-              </div>
+              {#if showCustomColors}
+                <!-- カスタムカラー管理表示 -->
+                <div class="max-h-[600px] overflow-y-auto">
+                  <CustomColorManager />
+                </div>
+              {:else}
+                <!-- 通常のカララント一覧表示 -->
+                <h2 class="card-title text-lg mb-4 flex items-center gap-2">
+                  <SwatchBook class="w-5 h-5" />
+                  カララント一覧
+                </h2>
+                <div class="max-h-[600px] overflow-y-auto">
+                  <DyeGrid 
+                    dyes={filteredDyesList}
+                    {selectedDye}
+                    onDyeSelect={handleDyeSelect}
+                  />
+                </div>
+              {/if}
             </div>
           </div>
         </div>

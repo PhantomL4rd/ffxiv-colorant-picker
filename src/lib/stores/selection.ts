@@ -1,11 +1,12 @@
 import { writable, get } from 'svelte/store';
-import type { Dye, HarmonyPattern } from '$lib/types';
+import type { Dye, HarmonyPattern, ExtendedDye, CustomColor } from '$lib/types';
 import { generateSuggestedDyes } from '$lib/utils/colorHarmony';
 import { filteredDyes } from './filter';
+import { isCustomDye } from '$lib/utils/customColorUtils';
 
 // 選択状態ストア
 export const selectionStore = writable<{
-  primaryDye: Dye | null;
+  primaryDye: Dye | ExtendedDye | null;
   suggestedDyes: [Dye, Dye] | null;
   pattern: HarmonyPattern;
 }>({
@@ -15,15 +16,31 @@ export const selectionStore = writable<{
 });
 
 
-// 基本カララントを選択
-export function selectPrimaryDye(dye: Dye): void {
+// 基本カララント（またはカスタムカラー）を選択
+export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
   selectionStore.update((state) => {
     // フィルター済みのdyesを取得（メタリック除外適用済み）
     const currentDyes = get(filteredDyes);
 
-    const suggested = currentDyes.length > 0 
-      ? generateSuggestedDyes(dye, state.pattern, currentDyes)
-      : null;
+    let suggested: [Dye, Dye] | null = null;
+    
+    if (currentDyes.length > 0) {
+      if (isCustomDye(dye)) {
+        // カスタムカラーの場合は通常のDyeとして扱って提案生成
+        const dyeForHarmony: Dye = {
+          id: dye.id,
+          name: dye.name,
+          category: dye.category,
+          hsv: dye.hsv,
+          rgb: dye.rgb,
+          hex: dye.hex,
+          tags: dye.tags
+        };
+        suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, currentDyes);
+      } else {
+        suggested = generateSuggestedDyes(dye, state.pattern, currentDyes);
+      }
+    }
 
     return {
       ...state,
@@ -86,7 +103,7 @@ export function clearSelection(): void {
 
 // 主色と提案色を直接設定（シェア復元用）
 export function setPaletteDirectly(
-  primaryDye: Dye,
+  primaryDye: Dye | ExtendedDye,
   suggestedDyes: [Dye, Dye],
   pattern: HarmonyPattern
 ): void {
@@ -95,4 +112,22 @@ export function setPaletteDirectly(
     suggestedDyes,
     pattern,
   });
+}
+
+// カスタムカラーを選択（便利関数）
+export function selectCustomColor(customColor: CustomColor): void {
+  // CustomColorをExtendedDyeに変換してから選択
+  const customDye: ExtendedDye = {
+    id: `custom-${customColor.id}`,
+    name: customColor.name,
+    category: '白系',
+    hsv: customColor.hsv,
+    rgb: customColor.rgb,
+    hex: `#${customColor.rgb.r.toString(16).padStart(2, '0')}${customColor.rgb.g.toString(16).padStart(2, '0')}${customColor.rgb.b.toString(16).padStart(2, '0')}`,
+    tags: ['custom'],
+    source: 'custom',
+    customColor
+  };
+  
+  selectPrimaryDye(customDye);
 }
