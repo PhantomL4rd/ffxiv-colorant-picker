@@ -1,7 +1,8 @@
 import { writable, get } from 'svelte/store';
 import type { Dye, HarmonyPattern, ExtendedDye, CustomColor } from '$lib/types';
 import { generateSuggestedDyes } from '$lib/utils/colorHarmony';
-import { filteredDyes } from './filter';
+import { filterStore } from './filter';
+import { dyeStore } from './dyes';
 import { isCustomDye } from '$lib/utils/customColorUtils';
 
 // 選択状態ストア
@@ -19,12 +20,17 @@ export const selectionStore = writable<{
 // 基本カララント（またはカスタムカラー）を選択
 export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
   selectionStore.update((state) => {
-    // フィルター済みのdyesを取得（メタリック除外適用済み）
-    const currentDyes = get(filteredDyes);
+    // 提案生成用のdyesを取得
+    // カテゴリフィルターは適用せず、メタリック除外のみ適用
+    const allDyes = get(dyeStore);
+    const currentFilter = get(filterStore);
+    const dyesForSuggestion = currentFilter.excludeMetallic 
+      ? allDyes.filter(d => !d.tags?.includes('metallic'))
+      : allDyes;
 
     let suggested: [Dye, Dye] | null = null;
     
-    if (currentDyes.length > 0) {
+    if (dyesForSuggestion.length > 0) {
       if (isCustomDye(dye)) {
         // カスタムカラーの場合は通常のDyeとして扱って提案生成
         const dyeForHarmony: Dye = {
@@ -36,9 +42,9 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
           hex: dye.hex,
           tags: dye.tags
         };
-        suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, currentDyes);
+        suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, dyesForSuggestion);
       } else {
-        suggested = generateSuggestedDyes(dye, state.pattern, currentDyes);
+        suggested = generateSuggestedDyes(dye, state.pattern, dyesForSuggestion);
       }
     }
 
@@ -57,11 +63,16 @@ export function updatePattern(pattern: HarmonyPattern): void {
     
     // 基本カララントが選択されている場合、提案を再生成
     if (state.primaryDye) {
-      // フィルター済みのdyesを取得（メタリック除外適用済み）
-      const currentDyes = get(filteredDyes);
+      // 提案生成用のdyesを取得
+      // カテゴリフィルターは適用せず、メタリック除外のみ適用
+      const allDyes = get(dyeStore);
+      const currentFilter = get(filterStore);
+      const dyesForSuggestion = currentFilter.excludeMetallic 
+        ? allDyes.filter(d => !d.tags?.includes('metallic'))
+        : allDyes;
       
-      suggested = currentDyes.length > 0 
-        ? generateSuggestedDyes(state.primaryDye, pattern, currentDyes)
+      suggested = dyesForSuggestion.length > 0 
+        ? generateSuggestedDyes(state.primaryDye, pattern, dyesForSuggestion)
         : null;
     }
 
@@ -78,11 +89,16 @@ export function regenerateSuggestions(): void {
   selectionStore.update((state) => {
     if (!state.primaryDye) return state;
 
-    // フィルター済みのdyesを取得（メタリック除報適用済み）
-    const currentDyes = get(filteredDyes);
+    // 提案生成用のdyesを取得
+    // カテゴリフィルターは適用せず、メタリック除外のみ適用
+    const allDyes = get(dyeStore);
+    const currentFilter = get(filterStore);
+    const dyesForSuggestion = currentFilter.excludeMetallic 
+      ? allDyes.filter(d => !d.tags?.includes('metallic'))
+      : allDyes;
 
-    const suggested = currentDyes.length > 0 
-      ? generateSuggestedDyes(state.primaryDye, state.pattern, currentDyes)
+    const suggested = dyesForSuggestion.length > 0 
+      ? generateSuggestedDyes(state.primaryDye, state.pattern, dyesForSuggestion)
       : null;
 
     return {
