@@ -84,7 +84,6 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
     'monochromatic',
     'similar',
     'contrast',
-    'random'
   ];
   const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
   
