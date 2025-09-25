@@ -56,7 +56,7 @@
 
     {#if customColors.length === 0}
       <div class="text-center py-8 text-gray-500">
-        <p class="mb-2">まだカスタムカラーが登録されていません</p>
+        <p class="mb-2">まだあなたの色が登録されていません</p>
         <p class="text-sm">「新しい色を追加」ボタンからあなたの髪色や肌色、目の色を登録してみましょう</p>
       </div>
     {:else}
