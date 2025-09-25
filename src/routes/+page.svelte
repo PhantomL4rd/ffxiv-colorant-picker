@@ -2,8 +2,19 @@
 import { onMount } from 'svelte';
 import type { Dye, HarmonyPattern, Favorite } from '$lib/types';
 import { loadDyes, dyeStore } from '$lib/stores/dyes';
-import { selectionStore, selectPrimaryDye, updatePattern, regenerateSuggestions } from '$lib/stores/selection';
-import { filterStore, filteredDyes, toggleCategory, resetFilters, toggleExcludeMetallic } from '$lib/stores/filter';
+import {
+  selectionStore,
+  selectPrimaryDye,
+  updatePattern,
+  regenerateSuggestions,
+} from '$lib/stores/selection';
+import {
+  filterStore,
+  filteredDyes,
+  toggleCategory,
+  resetFilters,
+  toggleExcludeMetallic,
+} from '$lib/stores/filter';
 import { restorePaletteFromUrl } from '$lib/utils/shareUtils';
 import { PaintBucket, Blend, SwatchBook } from '@lucide/svelte';
 
@@ -37,7 +48,7 @@ const excludeMetallic = $derived($filterStore.excludeMetallic);
 onMount(async () => {
   try {
     await loadDyes();
-    
+
     // URL復元処理
     const dyes = $dyeStore;
     if (dyes.length > 0) {
@@ -47,7 +58,7 @@ onMount(async () => {
         activeTab = 'picker';
       }
     }
-    
+
     isLoading = false;
   } catch (error) {
     console.error('カララントデータの読み込みに失敗しました:', error);
@@ -63,7 +74,6 @@ function handlePatternChange(pattern: HarmonyPattern) {
   updatePattern(pattern);
 }
 
-
 function handleToggleCategory(category: string) {
   showCustomColors = false; // カテゴリ選択時はカスタムカラーを非表示
   toggleCategory(category as any);
@@ -75,7 +85,7 @@ function handleClearCategories() {
 
 function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
   const [primary] = randomDyes;
-  
+
   // 配色パターンもランダムに選択
   const patterns: HarmonyPattern[] = [
     'triadic',
@@ -83,13 +93,13 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
     'analogous',
     'monochromatic',
     'similar',
-    'contrast'
+    'contrast',
   ];
   const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-  
+
   // 配色パターンを先に設定
   updatePattern(randomPattern);
-  
+
   // その後、主色を選択（提案は自動生成される）
   selectPrimaryDye(primary);
 }

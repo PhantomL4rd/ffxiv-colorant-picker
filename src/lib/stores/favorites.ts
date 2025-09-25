@@ -1,5 +1,12 @@
 import { writable } from 'svelte/store';
-import type { Favorite, FavoritesData, Dye, HarmonyPattern, ExtendedDye, CustomColor } from '$lib/types';
+import type {
+  Favorite,
+  FavoritesData,
+  Dye,
+  HarmonyPattern,
+  ExtendedDye,
+  CustomColor,
+} from '$lib/types';
 import { selectionStore, selectPrimaryDye, updatePattern, setPaletteDirectly } from './selection';
 import { isCustomDye, extractCustomColor } from '$lib/utils/customColorUtils';
 
@@ -18,8 +25,8 @@ function generateId(): string {
   }
   // Fallback for older browsers
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -34,7 +41,7 @@ export function loadFavorites(): void {
     }
 
     const data: FavoritesData = JSON.parse(stored);
-    
+
     // データバージョンチェック
     if (data.version !== STORAGE_VERSION) {
       console.warn('お気に入りデータのバージョンが異なります。初期化します。');
@@ -43,13 +50,15 @@ export function loadFavorites(): void {
     }
 
     // データ検証
-    const validFavorites = data.favorites.filter(favorite => {
-      return favorite.id && 
-             favorite.name && 
-             favorite.primaryDye && 
-             favorite.suggestedDyes && 
-             favorite.pattern && 
-             favorite.createdAt;
+    const validFavorites = data.favorites.filter((favorite) => {
+      return (
+        favorite.id &&
+        favorite.name &&
+        favorite.primaryDye &&
+        favorite.suggestedDyes &&
+        favorite.pattern &&
+        favorite.createdAt
+      );
     });
 
     favoritesStore.set(validFavorites);
@@ -64,7 +73,7 @@ function saveFavoritesToStorage(favorites: Favorite[]): void {
   try {
     const data: FavoritesData = {
       favorites,
-      version: STORAGE_VERSION
+      version: STORAGE_VERSION,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
@@ -84,7 +93,7 @@ export function saveFavorite(input: {
   pattern: HarmonyPattern;
 }): void {
   try {
-    favoritesStore.update(favorites => {
+    favoritesStore.update((favorites) => {
       // 最大件数チェック
       if (favorites.length >= MAX_FAVORITES) {
         throw new Error(`お気に入りは最大${MAX_FAVORITES}件まで保存できます。`);
@@ -98,7 +107,7 @@ export function saveFavorite(input: {
         // 重複チェックと連番追加
         let counter = 1;
         const baseName = name;
-        while (favorites.some(f => f.name === name)) {
+        while (favorites.some((f) => f.name === name)) {
           name = `${baseName} (${counter})`;
           counter++;
         }
@@ -115,7 +124,7 @@ export function saveFavorite(input: {
           hsv: input.primaryDye.hsv,
           rgb: input.primaryDye.rgb,
           hex: input.primaryDye.hex,
-          tags: ['custom']
+          tags: ['custom'],
         };
       } else {
         primaryDyeForStorage = input.primaryDye;
@@ -127,7 +136,7 @@ export function saveFavorite(input: {
         primaryDye: primaryDyeForStorage,
         suggestedDyes: input.suggestedDyes,
         pattern: input.pattern,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       const updated = [...favorites, newFavorite];
@@ -143,8 +152,8 @@ export function saveFavorite(input: {
 // お気に入りを削除
 export function deleteFavorite(favoriteId: string): void {
   try {
-    favoritesStore.update(favorites => {
-      const updated = favorites.filter(f => f.id !== favoriteId);
+    favoritesStore.update((favorites) => {
+      const updated = favorites.filter((f) => f.id !== favoriteId);
       saveFavoritesToStorage(updated);
       return updated;
     });
@@ -166,9 +175,9 @@ export function renameFavorite(favoriteId: string, newName: string): void {
       throw new Error('お気に入りの名前は100文字以内で入力してください。');
     }
 
-    favoritesStore.update(favorites => {
+    favoritesStore.update((favorites) => {
       // 重複チェック（自分以外）
-      const existingNames = favorites.filter(f => f.id !== favoriteId).map(f => f.name);
+      const existingNames = favorites.filter((f) => f.id !== favoriteId).map((f) => f.name);
       let finalName = trimmedName;
       let counter = 1;
       while (existingNames.includes(finalName)) {
@@ -176,12 +185,12 @@ export function renameFavorite(favoriteId: string, newName: string): void {
         counter++;
       }
 
-      const updated = favorites.map(f => {
+      const updated = favorites.map((f) => {
         if (f.id === favoriteId) {
           return {
             ...f,
             name: finalName,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
           };
         }
         return f;
@@ -204,7 +213,7 @@ export function restoreFavorite(favorite: Favorite): void {
       // カスタムカラーの場合はExtendedDyeとして扱う
       const extendedDye: ExtendedDye = {
         ...favorite.primaryDye,
-        source: 'custom'
+        source: 'custom',
       };
       // 直接パレットを設定（カスタムカラーの場合は提案色も保存されている）
       setPaletteDirectly(extendedDye, favorite.suggestedDyes, favorite.pattern);

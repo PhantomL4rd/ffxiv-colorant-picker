@@ -1,35 +1,35 @@
 <script lang="ts">
-  import { customColorsStore } from '$lib/stores/customColors';
-  import { createCustomDye } from '$lib/utils/customColorUtils';
-  import { selectPrimaryDye } from '$lib/stores/selection';
-  import CustomColorForm from './CustomColorForm.svelte';
-  import CustomColorItem from './CustomColorItem.svelte';
-  import { Plus, CircleUser } from '@lucide/svelte';
+import { customColorsStore } from '$lib/stores/customColors';
+import { createCustomDye } from '$lib/utils/customColorUtils';
+import { selectPrimaryDye } from '$lib/stores/selection';
+import CustomColorForm from './CustomColorForm.svelte';
+import CustomColorItem from './CustomColorItem.svelte';
+import { Plus, CircleUser } from '@lucide/svelte';
 
-  let showForm = $state(false);
-  let editingColor = $state<string | null>(null);
+let showForm = $state(false);
+let editingColor = $state<string | null>(null);
 
-  const customColors = $derived($customColorsStore);
+const customColors = $derived($customColorsStore);
 
-  function handleAddNew() {
-    editingColor = null;
-    showForm = true;
-  }
+function handleAddNew() {
+  editingColor = null;
+  showForm = true;
+}
 
-  function handleEdit(colorId: string) {
-    editingColor = colorId;
-    showForm = true;
-  }
+function handleEdit(colorId: string) {
+  editingColor = colorId;
+  showForm = true;
+}
 
-  function handleFormClose() {
-    showForm = false;
-    editingColor = null;
-  }
+function handleFormClose() {
+  showForm = false;
+  editingColor = null;
+}
 
-  function handleColorSelect(color: any) {
-    const customDye = createCustomDye(color);
-    selectPrimaryDye(customDye);
-  }
+function handleColorSelect(color: any) {
+  const customDye = createCustomDye(color);
+  selectPrimaryDye(customDye);
+}
 </script>
 
 <div class="space-y-4">

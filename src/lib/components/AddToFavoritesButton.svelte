@@ -17,11 +17,13 @@ let saveError = $state('');
 const currentSelection = $derived($selectionStore);
 
 // プライマリ染料が選択されていない場合は無効
-const isDisabled = $derived(disabled || !currentSelection.primaryDye || !currentSelection.suggestedDyes);
+const isDisabled = $derived(
+  disabled || !currentSelection.primaryDye || !currentSelection.suggestedDyes
+);
 
 async function openModal() {
   if (isDisabled) return;
-  
+
   // 即座にお気に入りに追加（モーダルを表示せずに）
   await handleSave();
 }
@@ -40,12 +42,11 @@ async function handleSave() {
       name: undefined, // 自動生成される名前を使用
       primaryDye: currentSelection.primaryDye,
       suggestedDyes: currentSelection.suggestedDyes,
-      pattern: currentSelection.pattern
+      pattern: currentSelection.pattern,
     });
 
     // 成功を示すトーストを表示（モーダルなしで）
     showToast();
-    
   } catch (error) {
     saveError = error instanceof Error ? error.message : 'お気に入りの保存に失敗しました。';
     // エラーの場合はアラートで表示
@@ -64,9 +65,9 @@ function showToast() {
       <span>お気に入りに追加しました！</span>
     </div>
   `;
-  
+
   document.body.appendChild(toast);
-  
+
   // 3秒後に削除
   setTimeout(() => {
     if (document.body.contains(toast)) {
@@ -74,7 +75,6 @@ function showToast() {
     }
   }, 3000);
 }
-
 </script>
 
 <!-- お気に入り追加ボタン -->

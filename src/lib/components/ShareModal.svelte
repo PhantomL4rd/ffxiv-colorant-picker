@@ -26,11 +26,10 @@ const suggestedDyes = $derived(favorite?.suggestedDyes || []);
 const suggestedDye1 = $derived(suggestedDyes[0] || null);
 const suggestedDye2 = $derived(suggestedDyes[1] || null);
 
-
 // コピー機能
 async function handleCopy() {
   if (!shareText || iscopying) return;
-  
+
   iscopying = true;
   copyError = '';
   copySuccess = false;

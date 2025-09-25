@@ -1,26 +1,26 @@
 <script lang="ts">
-  import { deleteCustomColor } from '$lib/stores/customColors';
-  import { formatRgbDisplay } from '$lib/utils/customColorUtils';
-  import type { CustomColor } from '$lib/types';
-  import { Edit2, Trash2 } from '@lucide/svelte';
+import { deleteCustomColor } from '$lib/stores/customColors';
+import { formatRgbDisplay } from '$lib/utils/customColorUtils';
+import type { CustomColor } from '$lib/types';
+import { Edit2, Trash2 } from '@lucide/svelte';
 
-  interface Props {
-    color: CustomColor;
-    onSelect: () => void;
-    onEdit: () => void;
+interface Props {
+  color: CustomColor;
+  onSelect: () => void;
+  onEdit: () => void;
+}
+
+let { color, onSelect, onEdit }: Props = $props();
+
+const colorStyle = $derived(`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`);
+
+const rgbDisplay = $derived(formatRgbDisplay(color.rgb));
+
+function handleDelete() {
+  if (confirm(`「${color.name}」を削除しますか？`)) {
+    deleteCustomColor(color.id);
   }
-
-  let { color, onSelect, onEdit }: Props = $props();
-
-  const colorStyle = $derived(`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`);
-
-  const rgbDisplay = $derived(formatRgbDisplay(color.rgb));
-
-  function handleDelete() {
-    if (confirm(`「${color.name}」を削除しますか？`)) {
-      deleteCustomColor(color.id);
-    }
-  }
+}
 </script>
 
 <div class="card bg-base-100 border border-base-300 hover:shadow-md transition-shadow">

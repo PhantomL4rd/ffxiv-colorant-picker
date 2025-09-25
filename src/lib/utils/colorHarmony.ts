@@ -34,7 +34,7 @@ export function calculateContrast(baseHue: number): [number, number] {
 
 // 最も近い色相の染料を見つける
 export function findNearestDyes(targetHues: number[], dyes: Dye[], excludeDye?: Dye): Dye[] {
-  const availableDyes = dyes.filter(dye => !excludeDye || dye.id !== excludeDye.id);
+  const availableDyes = dyes.filter((dye) => !excludeDye || dye.id !== excludeDye.id);
   const result: Dye[] = [];
   const usedDyeIds = new Set<string>();
 

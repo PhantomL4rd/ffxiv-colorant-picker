@@ -1749,9 +1749,7 @@
         "b": 167
       },
       "hex": "#A7A7A7",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_105",
@@ -1768,9 +1766,7 @@
         "b": 61
       },
       "hex": "#EDE63D",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_106",
@@ -1787,9 +1783,7 @@
         "b": 75
       },
       "hex": "#B61D4B",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_107",
@@ -1806,9 +1800,7 @@
         "b": 47
       },
       "hex": "#E48C2F",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_108",
@@ -1825,9 +1817,7 @@
         "b": 70
       },
       "hex": "#F4DA46",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_109",
@@ -1844,9 +1834,7 @@
         "b": 87
       },
       "hex": "#22A757",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_110",
@@ -1863,9 +1851,7 @@
         "b": 230
       },
       "hex": "#5ED4E6",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_111",
@@ -1882,9 +1868,7 @@
         "b": 217
       },
       "hex": "#5052D9",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_112",
@@ -1901,9 +1885,7 @@
         "b": 194
       },
       "hex": "#A366C2",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_113",
@@ -1920,9 +1902,7 @@
         "b": 104
       },
       "hex": "#606068",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_114",
@@ -1939,9 +1919,7 @@
         "b": 218
       },
       "hex": "#E9E3DA",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_115",
@@ -1958,9 +1936,7 @@
         "b": 151
       },
       "hex": "#E7D197",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_116",
@@ -2096,9 +2072,7 @@
         "b": 107
       },
       "hex": "#A2596B",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_124",
@@ -2115,9 +2089,7 @@
         "b": 0
       },
       "hex": "#1F0000",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_125",
@@ -2134,9 +2106,7 @@
         "b": 63
       },
       "hex": "#15423F",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     },
     {
       "id": "dye_126",
@@ -2153,9 +2123,7 @@
         "b": 31
       },
       "hex": "#08021F",
-      "tags": [
-        "metallic"
-      ]
+      "tags": ["metallic"]
     }
   ]
 }

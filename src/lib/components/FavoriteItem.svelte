@@ -21,7 +21,6 @@ let isDeleting = $state(false);
 let isRenaming = $state(false);
 let error = $state('');
 
-
 // 作成日時のフォーマット
 function formatDate(dateStr: string): string {
   try {
@@ -31,7 +30,7 @@ function formatDate(dateStr: string): string {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   } catch (error) {
     return '日時不明';
@@ -59,9 +58,9 @@ async function saveEdit() {
 
     isRenaming = true;
     error = '';
-    
+
     await renameFavorite(favorite.id, editingName.trim());
-    
+
     isEditing = false;
     editingName = '';
   } catch (err) {

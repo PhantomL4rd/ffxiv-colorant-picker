@@ -1,112 +1,121 @@
 <script lang="ts">
-  import { customColorsStore, saveCustomColor, updateCustomColor, isNameDuplicate } from '$lib/stores/customColors';
-  import { validateCustomColorName, validateRgbInput, formatRgbDisplay } from '$lib/utils/customColorUtils';
-  import type { RGBColor } from '$lib/types';
-  import { X, Save } from '@lucide/svelte';
+import {
+  customColorsStore,
+  saveCustomColor,
+  updateCustomColor,
+  isNameDuplicate,
+} from '$lib/stores/customColors';
+import {
+  validateCustomColorName,
+  validateRgbInput,
+  formatRgbDisplay,
+} from '$lib/utils/customColorUtils';
+import type { RGBColor } from '$lib/types';
+import { X, Save } from '@lucide/svelte';
 
-  interface Props {
-    editColorId?: string | null;
-    onClose: () => void;
+interface Props {
+  editColorId?: string | null;
+  onClose: () => void;
+}
+
+let { editColorId = null, onClose }: Props = $props();
+
+// 編集対象のカスタムカラーを取得
+const editingColor = $derived(
+  editColorId ? $customColorsStore.find((color) => color.id === editColorId) || null : null
+);
+
+// フォーム状態
+let name = $state('');
+let rgbInputs = $state({ r: 0, g: 0, b: 0 });
+let errors = $state<{ name?: string; rgb?: string; submit?: string }>({});
+let isSubmitting = $state(false);
+
+// 編集時の初期値設定
+$effect(() => {
+  const color = editingColor;
+  if (color) {
+    name = color.name;
+    rgbInputs = { ...color.rgb };
+  } else {
+    name = '';
+    rgbInputs = { r: 120, g: 85, b: 45 }; // デフォルト値（髪色っぽい色）
   }
+  errors = {};
+});
 
-  let { editColorId = null, onClose }: Props = $props();
+// プレビュー色の計算
+let previewColor = $derived(
+  validateRgbInput(rgbInputs) ? `rgb(${rgbInputs.r}, ${rgbInputs.g}, ${rgbInputs.b})` : '#ccc'
+);
 
-  // 編集対象のカスタムカラーを取得
-  const editingColor = $derived(
-    editColorId ? $customColorsStore.find(color => color.id === editColorId) || null : null
-  );
+// RGB値の表示
+const rgbDisplay = $derived(formatRgbDisplay(rgbInputs));
 
-  // フォーム状態
-  let name = $state('');
-  let rgbInputs = $state({ r: 0, g: 0, b: 0 });
-  let errors = $state<{ name?: string; rgb?: string; submit?: string }>({});
-  let isSubmitting = $state(false);
+// RGB入力ハンドラ
+function handleRgbChange(component: 'r' | 'g' | 'b', value: string) {
+  const numValue = parseInt(value, 10);
+  if (!isNaN(numValue)) {
+    rgbInputs[component] = Math.max(0, Math.min(255, numValue));
+  }
+  // RGB値エラーをクリア
+  if (errors.rgb) {
+    errors.rgb = undefined;
+  }
+}
 
-  // 編集時の初期値設定
-  $effect(() => {
-    const color = editingColor;
-    if (color) {
-      name = color.name;
-      rgbInputs = { ...color.rgb };
+// フォーム送信
+async function handleSubmit() {
+  if (isSubmitting) return;
+
+  errors = {};
+  isSubmitting = true;
+
+  try {
+    // 名前バリデーション
+    const nameValidation = validateCustomColorName(name);
+    if (!nameValidation.valid) {
+      errors.name = nameValidation.error;
+      return;
+    }
+
+    // RGB値バリデーション
+    if (!validateRgbInput(rgbInputs)) {
+      errors.rgb = 'RGB値は0-255の範囲で入力してください';
+      return;
+    }
+
+    // 名前重複チェック
+    const isDuplicate = isNameDuplicate(name.trim(), editColorId || undefined);
+    if (isDuplicate) {
+      errors.name = 'この名前は既に使用されています';
+      return;
+    }
+
+    // 保存処理
+    if (editColorId) {
+      updateCustomColor(editColorId, {
+        name: name.trim(),
+        rgb: rgbInputs,
+      });
     } else {
-      name = '';
-      rgbInputs = { r: 120, g: 85, b: 45 }; // デフォルト値（髪色っぽい色）
+      saveCustomColor({
+        name: name.trim(),
+        rgb: rgbInputs,
+      });
     }
-    errors = {};
-  });
 
-  // プレビュー色の計算
-  let previewColor = $derived(
-    validateRgbInput(rgbInputs) ? `rgb(${rgbInputs.r}, ${rgbInputs.g}, ${rgbInputs.b})` : '#ccc'
-  );
-
-  // RGB値の表示
-  const rgbDisplay = $derived(formatRgbDisplay(rgbInputs));
-
-  // RGB入力ハンドラ
-  function handleRgbChange(component: 'r' | 'g' | 'b', value: string) {
-    const numValue = parseInt(value, 10);
-    if (!isNaN(numValue)) {
-      rgbInputs[component] = Math.max(0, Math.min(255, numValue));
-    }
-    // RGB値エラーをクリア
-    if (errors.rgb) {
-      errors.rgb = undefined;
-    }
-  }
-
-  // フォーム送信
-  async function handleSubmit() {
-    if (isSubmitting) return;
-    
-    errors = {};
-    isSubmitting = true;
-
-    try {
-      // 名前バリデーション
-      const nameValidation = validateCustomColorName(name);
-      if (!nameValidation.valid) {
-        errors.name = nameValidation.error;
-        return;
-      }
-
-      // RGB値バリデーション
-      if (!validateRgbInput(rgbInputs)) {
-        errors.rgb = 'RGB値は0-255の範囲で入力してください';
-        return;
-      }
-
-      // 名前重複チェック
-      const isDuplicate = isNameDuplicate(name.trim(), editColorId || undefined);
-      if (isDuplicate) {
-        errors.name = 'この名前は既に使用されています';
-        return;
-      }
-
-      // 保存処理
-      if (editColorId) {
-        updateCustomColor(editColorId, {
-          name: name.trim(),
-          rgb: rgbInputs
-        });
-      } else {
-        saveCustomColor({
-          name: name.trim(),
-          rgb: rgbInputs
-        });
-      }
-
-      onClose();
-    } catch (error) {
-      errors.submit = error instanceof Error ? error.message : '保存に失敗しました';
-    } finally {
-      isSubmitting = false;
-    }
-  }
-
-  function handleCancel() {
     onClose();
+  } catch (error) {
+    errors.submit = error instanceof Error ? error.message : '保存に失敗しました';
+  } finally {
+    isSubmitting = false;
   }
+}
+
+function handleCancel() {
+  onClose();
+}
 </script>
 
 <div class="card bg-base-200 p-4">

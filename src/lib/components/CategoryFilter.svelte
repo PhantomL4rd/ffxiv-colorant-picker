@@ -9,7 +9,13 @@ interface Props {
   isCustomColorsSelected?: boolean;
 }
 
-const { selectedCategory, onToggleCategory, onClearCategories, onSelectCustomColors, isCustomColorsSelected = false }: Props = $props();
+const {
+  selectedCategory,
+  onToggleCategory,
+  onClearCategories,
+  onSelectCustomColors,
+  isCustomColorsSelected = false,
+}: Props = $props();
 
 const categories: DyeCategory[] = [
   '白系',

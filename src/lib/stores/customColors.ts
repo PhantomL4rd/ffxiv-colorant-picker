@@ -20,12 +20,12 @@ export function loadCustomColors(): void {
     }
 
     const data: CustomColorsData = JSON.parse(stored);
-    
+
     // 日付文字列をDateオブジェクトに変換
-    const colors = data.colors.map(color => ({
+    const colors = data.colors.map((color) => ({
       ...color,
       createdAt: new Date(color.createdAt),
-      updatedAt: new Date(color.updatedAt)
+      updatedAt: new Date(color.updatedAt),
     }));
 
     customColorsStore.set(colors);
@@ -43,9 +43,9 @@ function saveToStorage(colors: CustomColor[]): void {
     const data: CustomColorsData = {
       colors,
       version: VERSION,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error('Failed to save custom colors:', error);
@@ -63,10 +63,10 @@ export function saveCustomColor(colorData: { name: string; rgb: RGBColor }): voi
     rgb: colorData.rgb,
     hsv: rgbToHsv(colorData.rgb),
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
-  customColorsStore.update(colors => {
+  customColorsStore.update((colors) => {
     const updated = [...colors, newColor];
     saveToStorage(updated);
     return updated;
@@ -76,15 +76,18 @@ export function saveCustomColor(colorData: { name: string; rgb: RGBColor }): voi
 /**
  * カスタムカラーを更新
  */
-export function updateCustomColor(id: string, updates: Partial<Pick<CustomColor, 'name' | 'rgb'>>): void {
-  customColorsStore.update(colors => {
-    const updated = colors.map(color => {
+export function updateCustomColor(
+  id: string,
+  updates: Partial<Pick<CustomColor, 'name' | 'rgb'>>
+): void {
+  customColorsStore.update((colors) => {
+    const updated = colors.map((color) => {
       if (color.id !== id) return color;
 
       const updatedColor = {
         ...color,
         ...updates,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // RGB値が更新された場合はHSV値も再計算
@@ -104,8 +107,8 @@ export function updateCustomColor(id: string, updates: Partial<Pick<CustomColor,
  * カスタムカラーを削除
  */
 export function deleteCustomColor(id: string): void {
-  customColorsStore.update(colors => {
-    const updated = colors.filter(color => color.id !== id);
+  customColorsStore.update((colors) => {
+    const updated = colors.filter((color) => color.id !== id);
     saveToStorage(updated);
     return updated;
   });
@@ -114,8 +117,11 @@ export function deleteCustomColor(id: string): void {
 /**
  * カスタムカラーを名前で検索
  */
-export function findCustomColorByName(name: string, colors: CustomColor[]): CustomColor | undefined {
-  return colors.find(color => color.name === name.trim());
+export function findCustomColorByName(
+  name: string,
+  colors: CustomColor[]
+): CustomColor | undefined {
+  return colors.find((color) => color.name === name.trim());
 }
 
 /**
@@ -124,9 +130,7 @@ export function findCustomColorByName(name: string, colors: CustomColor[]): Cust
 export function isNameDuplicate(name: string, excludeId?: string): boolean {
   const colors = get(customColorsStore);
   const trimmedName = name.trim();
-  return colors.some(color => 
-    color.name === trimmedName && color.id !== excludeId
-  );
+  return colors.some((color) => color.name === trimmedName && color.id !== excludeId);
 }
 
 // 初期化時にカスタムカラーを読み込み

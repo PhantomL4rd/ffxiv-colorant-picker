@@ -36,7 +36,7 @@ function handleShare() {
 
 function openShareModal() {
   if (isDisabled) return;
-  
+
   if (!currentSelection.primaryDye || !currentSelection.suggestedDyes) {
     return;
   }
@@ -48,9 +48,9 @@ function openShareModal() {
     primaryDye: currentSelection.primaryDye,
     suggestedDyes: currentSelection.suggestedDyes,
     pattern: currentSelection.pattern,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
-  
+
   shareModalOpen = true;
 }
 

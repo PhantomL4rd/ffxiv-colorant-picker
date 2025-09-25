@@ -31,7 +31,7 @@ function handleSelectFavorite(favorite: Favorite) {
   try {
     // お気に入りを復元（ピッカーに適用）
     restoreFavorite(favorite);
-    
+
     // 親コンポーネントにも通知（タブ切り替えなど）
     onSelectFavorite?.(favorite);
   } catch (error) {

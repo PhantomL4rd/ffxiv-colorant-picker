@@ -12,7 +12,7 @@ export function customColorToDye(customColor: CustomColor): Dye {
     hsv: customColor.hsv,
     rgb: customColor.rgb,
     hex: rgbToHex(customColor.rgb),
-    tags: ['custom']
+    tags: ['custom'],
   };
 }
 
@@ -23,7 +23,7 @@ export function createCustomDye(customColor: CustomColor): ExtendedDye {
   return {
     ...customColorToDye(customColor),
     source: 'custom',
-    customColor
+    customColor,
   };
 }
 
@@ -32,9 +32,15 @@ export function createCustomDye(customColor: CustomColor): ExtendedDye {
  */
 export function validateRgbInput(rgb: RGBColor): boolean {
   return (
-    Number.isInteger(rgb.r) && rgb.r >= 0 && rgb.r <= 255 &&
-    Number.isInteger(rgb.g) && rgb.g >= 0 && rgb.g <= 255 &&
-    Number.isInteger(rgb.b) && rgb.b >= 0 && rgb.b <= 255
+    Number.isInteger(rgb.r) &&
+    rgb.r >= 0 &&
+    rgb.r <= 255 &&
+    Number.isInteger(rgb.g) &&
+    rgb.g >= 0 &&
+    rgb.g <= 255 &&
+    Number.isInteger(rgb.b) &&
+    rgb.b >= 0 &&
+    rgb.b <= 255
   );
 }
 
@@ -43,15 +49,15 @@ export function validateRgbInput(rgb: RGBColor): boolean {
  */
 export function validateCustomColorName(name: string): { valid: boolean; error?: string } {
   const trimmed = name.trim();
-  
+
   if (!trimmed) {
     return { valid: false, error: '名前を入力してください' };
   }
-  
+
   if (trimmed.length > 50) {
     return { valid: false, error: '名前は50文字以内で入力してください' };
   }
-  
+
   return { valid: true };
 }
 
@@ -60,18 +66,18 @@ export function validateCustomColorName(name: string): { valid: boolean; error?:
  */
 export function parseRgbString(input: string): RGBColor | null {
   try {
-    const parts = input.split(',').map(part => part.trim());
-    
+    const parts = input.split(',').map((part) => part.trim());
+
     if (parts.length !== 3) {
       return null;
     }
-    
+
     const r = parseInt(parts[0], 10);
     const g = parseInt(parts[1], 10);
     const b = parseInt(parts[2], 10);
-    
+
     const rgb: RGBColor = { r, g, b };
-    
+
     return validateRgbInput(rgb) ? rgb : null;
   } catch {
     return null;

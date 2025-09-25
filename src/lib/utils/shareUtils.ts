@@ -1,4 +1,11 @@
-import type { Dye, Favorite, HarmonyPattern, ExtendedDye, CustomColorShare, ExtendedSharePaletteData } from '$lib/types';
+import type {
+  Dye,
+  Favorite,
+  HarmonyPattern,
+  ExtendedDye,
+  CustomColorShare,
+  ExtendedSharePaletteData,
+} from '$lib/types';
 import { getPatternLabel } from '$lib/constants/patterns';
 import { setPaletteDirectly } from '$lib/stores/selection';
 import { isCustomDye } from '$lib/utils/customColorUtils';
@@ -16,22 +23,22 @@ interface SharePaletteData {
 export function generateShareUrl(favorite: Favorite): string {
   // カスタムカラーか通常のカララントか判定
   const isCustom = favorite.primaryDye.tags?.includes('custom');
-  
+
   if (isCustom) {
     // カスタムカラーの場合は拡張データ形式で保存
     const customColorShare: CustomColorShare = {
       type: 'custom',
       name: favorite.primaryDye.name,
       rgb: favorite.primaryDye.rgb,
-      hsv: favorite.primaryDye.hsv
+      hsv: favorite.primaryDye.hsv,
     };
-    
+
     const extendedData: ExtendedSharePaletteData = {
       p: customColorShare,
       s: [favorite.suggestedDyes[0].id, favorite.suggestedDyes[1].id],
       pt: favorite.pattern,
     };
-    
+
     try {
       const jsonString = JSON.stringify(extendedData);
       const compressedData = LZString.compressToEncodedURIComponent(jsonString);
@@ -68,7 +75,7 @@ export function generateShareUrl(favorite: Favorite): string {
  */
 export function generateShareText(favorite: Favorite, shareUrl: string): string {
   const patternLabel = getPatternLabel(favorite.pattern);
-  
+
   return `主色：${favorite.primaryDye.name}
 提案色：${favorite.suggestedDyes[0].name} / ${favorite.suggestedDyes[1].name}
 配色パターン：${patternLabel}
@@ -84,14 +91,14 @@ export function decodePaletteFromUrl(url: string): SharePaletteData | null {
   try {
     const urlObj = new URL(url);
     const paletteParam = urlObj.searchParams.get('palette');
-    
+
     if (!paletteParam) {
       return null;
     }
 
     // 圧縮されたデータを解凍
     const jsonString = LZString.decompressFromEncodedURIComponent(paletteParam);
-    
+
     if (!jsonString) {
       console.warn('Failed to decompress palette data');
       return null;
@@ -135,7 +142,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
     const success = document.execCommand('copy');
     document.body.removeChild(textArea);
-    
+
     return success;
   } catch (error) {
     console.error('Failed to copy to clipboard:', error);
@@ -150,14 +157,14 @@ export function decodeCustomPaletteFromUrl(url: string): ExtendedSharePaletteDat
   try {
     const urlObj = new URL(url);
     const paletteParam = urlObj.searchParams.get('custom-palette');
-    
+
     if (!paletteParam) {
       return null;
     }
 
     // 圧縮されたデータを解凍
     const jsonString = LZString.decompressFromEncodedURIComponent(paletteParam);
-    
+
     if (!jsonString) {
       console.warn('Failed to decompress custom palette data');
       return null;
@@ -197,12 +204,12 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
           rgb: customData.p.rgb,
           hex: `#${customData.p.rgb.r.toString(16).padStart(2, '0')}${customData.p.rgb.g.toString(16).padStart(2, '0')}${customData.p.rgb.b.toString(16).padStart(2, '0')}`,
           tags: ['custom'],
-          source: 'custom'
+          source: 'custom',
         };
 
         // 提案色を取得
-        const secondaryDye1 = dyes.find(dye => dye.id === customData.s[0]);
-        const secondaryDye2 = dyes.find(dye => dye.id === customData.s[1]);
+        const secondaryDye1 = dyes.find((dye) => dye.id === customData.s[0]);
+        const secondaryDye2 = dyes.find((dye) => dye.id === customData.s[1]);
 
         if (!secondaryDye1 || !secondaryDye2) {
           console.warn('Secondary dyes not found');
@@ -228,15 +235,15 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
     }
 
     // 染料IDから実際のDyeオブジェクトを検索
-    const primaryDye = dyes.find(dye => dye.id === data.p);
-    const secondaryDye1 = dyes.find(dye => dye.id === data.s[0]);
-    const secondaryDye2 = dyes.find(dye => dye.id === data.s[1]);
+    const primaryDye = dyes.find((dye) => dye.id === data.p);
+    const secondaryDye1 = dyes.find((dye) => dye.id === data.s[0]);
+    const secondaryDye2 = dyes.find((dye) => dye.id === data.s[1]);
 
     if (!primaryDye || !secondaryDye1 || !secondaryDye2) {
-      console.warn('Some dyes not found:', { 
-        primary: data.p, 
+      console.warn('Some dyes not found:', {
+        primary: data.p,
         secondary: data.s,
-        found: { primaryDye, secondaryDye1, secondaryDye2 }
+        found: { primaryDye, secondaryDye1, secondaryDye2 },
       });
       return false;
     }

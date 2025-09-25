@@ -2,24 +2,24 @@ import type { HarmonyPattern } from '$lib/types';
 
 // パターン名のマッピング
 export const PATTERN_LABELS: Record<HarmonyPattern, string> = {
-  'triadic': 'バランス',
+  triadic: 'バランス',
   'split-complementary': 'アクセント',
-  'analogous': 'グラデーション',
-  'monochromatic': '同系色',
-  'similar': 'ナチュラル',
-  'contrast': 'コントラスト',
-  'random': 'ランダム'
+  analogous: 'グラデーション',
+  monochromatic: '同系色',
+  similar: 'ナチュラル',
+  contrast: 'コントラスト',
+  random: 'ランダム',
 };
 
 // パターンの説明
 export const PATTERN_DESCRIPTIONS: Record<HarmonyPattern, string> = {
-  'triadic': 'バランスよく調和した鮮やかな3色',
+  triadic: 'バランスよく調和した鮮やかな3色',
   'split-complementary': 'メインカラーに映える個性的な3色',
-  'analogous': '自然につながる優しい3色',
-  'monochromatic': '統一感のある落ち着いた3色',
-  'similar': '馴染みやすい近い色味の3色',
-  'contrast': 'はっきりとした対比のある3色',
-  'random': 'ランダムに選ばれた予想外の3色'
+  analogous: '自然につながる優しい3色',
+  monochromatic: '統一感のある落ち着いた3色',
+  similar: '馴染みやすい近い色味の3色',
+  contrast: 'はっきりとした対比のある3色',
+  random: 'ランダムに選ばれた予想外の3色',
 };
 
 // パターンの配列（セレクトボックス用）

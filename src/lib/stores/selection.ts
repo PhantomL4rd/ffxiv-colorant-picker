@@ -16,7 +16,6 @@ export const selectionStore = writable<{
   pattern: 'triadic',
 });
 
-
 // 基本カララント（またはカスタムカラー）を選択
 export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
   selectionStore.update((state) => {
@@ -24,12 +23,12 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
     // カテゴリフィルターは適用せず、メタリック除外のみ適用
     const allDyes = get(dyeStore);
     const currentFilter = get(filterStore);
-    const dyesForSuggestion = currentFilter.excludeMetallic 
-      ? allDyes.filter(d => !d.tags?.includes('metallic'))
+    const dyesForSuggestion = currentFilter.excludeMetallic
+      ? allDyes.filter((d) => !d.tags?.includes('metallic'))
       : allDyes;
 
     let suggested: [Dye, Dye] | null = null;
-    
+
     if (dyesForSuggestion.length > 0) {
       if (isCustomDye(dye)) {
         // カスタムカラーの場合は通常のDyeとして扱って提案生成
@@ -40,7 +39,7 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
           hsv: dye.hsv,
           rgb: dye.rgb,
           hex: dye.hex,
-          tags: dye.tags
+          tags: dye.tags,
         };
         suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, dyesForSuggestion);
       } else {
@@ -51,7 +50,7 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
     return {
       ...state,
       primaryDye: dye,
-      suggestedDyes: suggested
+      suggestedDyes: suggested,
     };
   });
 }
@@ -60,26 +59,27 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
 export function updatePattern(pattern: HarmonyPattern): void {
   selectionStore.update((state) => {
     let suggested = state.suggestedDyes;
-    
+
     // 基本カララントが選択されている場合、提案を再生成
     if (state.primaryDye) {
       // 提案生成用のdyesを取得
       // カテゴリフィルターは適用せず、メタリック除外のみ適用
       const allDyes = get(dyeStore);
       const currentFilter = get(filterStore);
-      const dyesForSuggestion = currentFilter.excludeMetallic 
-        ? allDyes.filter(d => !d.tags?.includes('metallic'))
+      const dyesForSuggestion = currentFilter.excludeMetallic
+        ? allDyes.filter((d) => !d.tags?.includes('metallic'))
         : allDyes;
-      
-      suggested = dyesForSuggestion.length > 0 
-        ? generateSuggestedDyes(state.primaryDye, pattern, dyesForSuggestion)
-        : null;
+
+      suggested =
+        dyesForSuggestion.length > 0
+          ? generateSuggestedDyes(state.primaryDye, pattern, dyesForSuggestion)
+          : null;
     }
 
     return {
       ...state,
       pattern,
-      suggestedDyes: suggested
+      suggestedDyes: suggested,
     };
   });
 }
@@ -93,17 +93,18 @@ export function regenerateSuggestions(): void {
     // カテゴリフィルターは適用せず、メタリック除外のみ適用
     const allDyes = get(dyeStore);
     const currentFilter = get(filterStore);
-    const dyesForSuggestion = currentFilter.excludeMetallic 
-      ? allDyes.filter(d => !d.tags?.includes('metallic'))
+    const dyesForSuggestion = currentFilter.excludeMetallic
+      ? allDyes.filter((d) => !d.tags?.includes('metallic'))
       : allDyes;
 
-    const suggested = dyesForSuggestion.length > 0 
-      ? generateSuggestedDyes(state.primaryDye, state.pattern, dyesForSuggestion)
-      : null;
+    const suggested =
+      dyesForSuggestion.length > 0
+        ? generateSuggestedDyes(state.primaryDye, state.pattern, dyesForSuggestion)
+        : null;
 
     return {
       ...state,
-      suggestedDyes: suggested
+      suggestedDyes: suggested,
     };
   });
 }
@@ -142,8 +143,8 @@ export function selectCustomColor(customColor: CustomColor): void {
     hex: `#${customColor.rgb.r.toString(16).padStart(2, '0')}${customColor.rgb.g.toString(16).padStart(2, '0')}${customColor.rgb.b.toString(16).padStart(2, '0')}`,
     tags: ['custom'],
     source: 'custom',
-    customColor
+    customColor,
   };
-  
+
   selectPrimaryDye(customDye);
 }

@@ -13,7 +13,6 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
 function handleSuggestedDyeClick(dye: Dye): void {
   selectPrimaryDye(dye);
 }
-
 </script>
 
 <div class="card bg-base-100 shadow-lg">

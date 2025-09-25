@@ -9,7 +9,8 @@ interface Props {
   onExcludeMetallicChange: () => void;
 }
 
-const { selectedPattern, onPatternChange, excludeMetallic, onExcludeMetallicChange }: Props = $props();
+const { selectedPattern, onPatternChange, excludeMetallic, onExcludeMetallicChange }: Props =
+  $props();
 
 function handlePatternChange(event: Event) {
   const target = event.target as HTMLSelectElement;
