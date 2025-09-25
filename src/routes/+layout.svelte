@@ -10,7 +10,7 @@ const siteDescription = 'FF14のカララント（染料）から3色の組み�
 </script>
 
 <svelte:head>
-  <title>{siteName}/title>
+  <title>{siteName}</title>
   <meta name="description" content={siteDescription} />
 </svelte:head>
 
