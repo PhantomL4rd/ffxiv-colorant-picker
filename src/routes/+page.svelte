@@ -32,6 +32,9 @@ let isLoading = $state(true);
 // カスタムカラー表示モード管理
 let showCustomColors = $state(false);
 
+// プレビューエリアへの参照
+let previewElement: HTMLElement;
+
 // ストアから状態を取得
 const selectedDye = $derived($selectionStore.primaryDye);
 const suggestedDyes = $derived($selectionStore.suggestedDyes);
@@ -59,6 +62,17 @@ onMount(async () => {
 
 function handleDyeSelect(dye: Dye) {
   selectPrimaryDye(dye);
+  
+  // カラーが選択されたらプレビューまでスクロール
+  setTimeout(() => {
+    if (previewElement) {
+      previewElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest' 
+      });
+    }
+  }, 100); // 少し遅延させてDOMの更新を待つ
 }
 
 function handlePatternChange(pattern: HarmonyPattern) {
@@ -148,7 +162,7 @@ function handleClearAll() {
     </div>
     
     <!-- プレビュー -->
-    <div class="space-y-6">
+    <div class="space-y-6" bind:this={previewElement}>
       {#if selectedDye && suggestedDyes}
         <!-- 組み合わせプレビュー -->
         <div class="card bg-base-200 shadow-md">

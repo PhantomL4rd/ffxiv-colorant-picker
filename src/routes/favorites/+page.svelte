@@ -1,5 +1,8 @@
 <script lang="ts">
 import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
+import { base } from '$app/paths';
+import type { Favorite } from '$lib/types';
 import FavoritesList from '$lib/components/FavoritesList.svelte';
 import { loadDyes } from '$lib/stores/dyes';
 
@@ -14,6 +17,11 @@ onMount(async () => {
     isLoading = false;
   }
 });
+
+function handleSelectFavorite(favorite: Favorite) {
+  // お気に入りが選択されたらピッカーページに遷移
+  goto(`${base}/`);
+}
 </script>
 
 <svelte:head>
@@ -25,5 +33,5 @@ onMount(async () => {
     <span class="loading loading-spinner loading-lg"></span>
   </div>
 {:else}
-  <FavoritesList />
+  <FavoritesList onSelectFavorite={handleSelectFavorite} />
 {/if}
