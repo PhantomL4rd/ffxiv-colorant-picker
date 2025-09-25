@@ -1,19 +1,12 @@
 <script lang="ts">
-import { SwatchBook, Heart, ExternalLink } from '@lucide/svelte';
+import { page } from '$app/stores';
+import { base } from '$app/paths';
+import { SwatchBook, Heart, ExternalLink } from 'lucide-svelte';
 
-interface Props {
-  activeTab: 'picker' | 'favorites';
-  onTabChange: (tab: 'picker' | 'favorites') => void;
-}
-
-const { activeTab, onTabChange }: Props = $props();
+const currentPath = $derived($page.url.pathname);
 
 // 要望/感想リンク
 const feedbackUrl = 'https://jp.finalfantasyxiv.com/lodestone/character/27344914/blog/5609012/';
-
-function handleTabClick(tab: 'picker' | 'favorites') {
-  onTabChange(tab);
-}
 
 function openFeedbackLink() {
   window.open(feedbackUrl, '_blank', 'noopener,noreferrer');
@@ -27,32 +20,32 @@ function openFeedbackLink() {
       <!-- タブボタン群 -->
       <div class="flex space-x-8">
         <!-- カララントピッカータブ -->
-        <button 
+        <a 
+          href="{base}/" 
           class="flex flex-col items-center justify-center p-2 rounded-lg transition-colors duration-200 min-w-[80px]"
-          class:bg-primary={activeTab === 'picker'}
-          class:text-primary-content={activeTab === 'picker'}
-          class:text-base-content={activeTab !== 'picker'}
-          class:hover:bg-base-300={activeTab !== 'picker'}
-          onclick={() => handleTabClick('picker')}
+          class:bg-primary={currentPath === base + '/' || currentPath === base}
+          class:text-primary-content={currentPath === base + '/' || currentPath === base}
+          class:text-base-content={currentPath !== base + '/' && currentPath !== base}
+          class:hover:bg-base-300={currentPath !== base + '/' && currentPath !== base}
           aria-label="カララントピッカー"
         >
           <SwatchBook class="w-6 h-6 mb-1" />
           <span class="text-xs font-medium">ピッカー</span>
-        </button>
+        </a>
 
         <!-- お気に入りタブ -->
-        <button 
+        <a 
+          href="{base}/favorites" 
           class="flex flex-col items-center justify-center p-2 rounded-lg transition-colors duration-200 min-w-[80px]"
-          class:bg-primary={activeTab === 'favorites'}
-          class:text-primary-content={activeTab === 'favorites'}
-          class:text-base-content={activeTab !== 'favorites'}
-          class:hover:bg-base-300={activeTab !== 'favorites'}
-          onclick={() => handleTabClick('favorites')}
+          class:bg-primary={currentPath === base + '/favorites'}
+          class:text-primary-content={currentPath === base + '/favorites'}
+          class:text-base-content={currentPath !== base + '/favorites'}
+          class:hover:bg-base-300={currentPath !== base + '/favorites'}
           aria-label="お気に入り"
         >
           <Heart class="w-6 h-6 mb-1" />
           <span class="text-xs font-medium">お気に入り</span>
-        </button>
+        </a>
 
         <!-- 要望/感想リンク -->
         <button 
@@ -73,19 +66,19 @@ function openFeedbackLink() {
 
 <style>
   /* タブボタンのアクティブ状態アニメーション */
-  button {
+  a, button {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
   }
   
-  button:active {
+  a:active, button:active {
     transform: scale(0.95);
   }
   
   /* フォーカス時のアウトライン */
-  button:focus-visible {
+  a:focus-visible, button:focus-visible {
     outline: 2px solid hsl(var(--p));
     outline-offset: 2px;
   }
