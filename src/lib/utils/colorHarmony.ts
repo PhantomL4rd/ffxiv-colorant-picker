@@ -67,12 +67,6 @@ export function findNearestDyes(targetHues: number[], dyes: Dye[], excludeDye?: 
   return result;
 }
 
-// ランダムに染料を選択
-export function selectRandomDyes(dyes: Dye[], count: number): Dye[] {
-  const shuffled = [...dyes].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
-
 // 配色パターンに基づいて提案染料を生成
 export function generateSuggestedDyes(
   primaryDye: Dye,
@@ -100,13 +94,6 @@ export function generateSuggestedDyes(
     case 'contrast':
       targetHues = calculateContrast(primaryDye.hsv.h);
       break;
-    case 'random': {
-      const randomDyes = selectRandomDyes(
-        allDyes.filter((d) => d.id !== primaryDye.id),
-        2
-      );
-      return [randomDyes[0], randomDyes[1]];
-    }
     default:
       targetHues = calculateTriadic(primaryDye.hsv.h);
   }
