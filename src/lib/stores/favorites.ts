@@ -242,9 +242,8 @@ export function restoreFavorite(favorite: Favorite): void {
       // 直接パレットを設定（カスタムカラーの場合は提案色も保存されている）
       setPaletteDirectly(extendedDye, favorite.suggestedDyes, favorite.pattern);
     } else {
-      // 通常のカララントの場合
-      selectPrimaryDye(favorite.primaryDye);
-      updatePattern(favorite.pattern);
+      // 通常のカララントもすべて直接パレット設定（フィルター状態を変更しない）
+      setPaletteDirectly(favorite.primaryDye, favorite.suggestedDyes, favorite.pattern);
     }
   } catch (error) {
     console.error('お気に入りの復元に失敗しました:', error);
