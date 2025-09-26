@@ -9,6 +9,7 @@ import type {
 import { getPatternLabel } from '$lib/constants/patterns';
 import { setPaletteDirectly } from '$lib/stores/selection';
 import { isCustomDye } from '$lib/utils/customColorUtils';
+import { rgbToHsv, rgbToHex } from '$lib/utils/colorConversion';
 import LZString from 'lz-string';
 import { rgbToOklab } from './colorConversion';
 
@@ -22,13 +23,6 @@ function isValidRgbValue(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 255;
 }
 
-function isValidHsvValue(h: unknown, s: unknown, v: unknown): boolean {
-  return (
-    typeof h === 'number' && h >= 0 && h <= 360 &&
-    typeof s === 'number' && s >= 0 && s <= 100 &&
-    typeof v === 'number' && v >= 0 && v <= 100
-  );
-}
 
 function isValidString(value: unknown, maxLength: number): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= maxLength;
@@ -42,13 +36,6 @@ function isValidRgbObject(rgb: unknown): rgb is { r: number; g: number; b: numbe
   );
 }
 
-function isValidHsvObject(hsv: unknown): hsv is { h: number; s: number; v: number } {
-  return (
-    typeof hsv === 'object' && hsv !== null &&
-    'h' in hsv && 's' in hsv && 'v' in hsv &&
-    isValidHsvValue(hsv.h, hsv.s, hsv.v)
-  );
-}
 
 interface SharePaletteData {
   p: string; // primary dye id
@@ -69,12 +56,12 @@ export function generateShareUrl(favorite: Favorite): string {
   currentUrl.pathname = currentUrl.pathname.replace(/\/favorites\/?$/, '/');
 
   if (isCustom) {
-    // カスタムカラーの場合は拡張データ形式で保存
+    // カスタムカラーの場合は拡張データ形式で保存（rgb のみ）
     const customColorShare: CustomColorShare = {
       type: 'custom',
       name: favorite.primaryDye.name,
       rgb: favorite.primaryDye.rgb,
-      hsv: favorite.primaryDye.hsv,
+      // hsvは削除（必要時に計算）
     };
 
     const extendedData: ExtendedSharePaletteData = {
@@ -225,7 +212,7 @@ export function decodeCustomPaletteFromUrl(url: string): ExtendedSharePaletteDat
 
     const data = JSON.parse(jsonString) as ExtendedSharePaletteData;
 
-    // カスタムデータの厳密な検証
+    // カスタムデータの厳密な検証（hsvは除外）
     if (
       !data.p ||
       typeof data.p !== 'object' ||
@@ -233,7 +220,6 @@ export function decodeCustomPaletteFromUrl(url: string): ExtendedSharePaletteDat
       data.p.type !== 'custom' ||
       !('name' in data.p) || !isValidString(data.p.name, MAX_NAME_LENGTH) ||
       !('rgb' in data.p) || !isValidRgbObject(data.p.rgb) ||
-      !('hsv' in data.p) || !isValidHsvObject(data.p.hsv) ||
       !Array.isArray(data.s) ||
       data.s.length !== 2 ||
       !isValidString(data.s[0], 100) ||
@@ -261,14 +247,14 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
     if (customData) {
       // カスタムカラーの場合
       if (typeof customData.p === 'object' && customData.p.type === 'custom') {
-        // カスタムカラーからExtendedDyeを作成
+        // カスタムカラーからExtendedDyeを作成（hsv/hexは動的に計算）
         const customDye: ExtendedDye = {
           id: `custom-temp-${Date.now()}`, // 一時的なID
           name: customData.p.name,
           category: '白系',
-          hsv: customData.p.hsv,
+          hsv: rgbToHsv(customData.p.rgb), // rgbから計算
           rgb: customData.p.rgb,
-          hex: `#${customData.p.rgb.r.toString(16).padStart(2, '0')}${customData.p.rgb.g.toString(16).padStart(2, '0')}${customData.p.rgb.b.toString(16).padStart(2, '0')}`,
+          hex: rgbToHex(customData.p.rgb), // rgbから計算
           oklab: rgbToOklab(customData.p.rgb),
           tags: ['custom'],
           source: 'custom',

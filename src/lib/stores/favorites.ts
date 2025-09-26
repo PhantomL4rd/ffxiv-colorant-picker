@@ -6,9 +6,12 @@ import type {
   HarmonyPattern,
   ExtendedDye,
   CustomColor,
+  StoredDye,
+  StoredFavorite,
 } from '$lib/types';
 import { selectionStore, selectPrimaryDye, updatePattern, setPaletteDirectly } from './selection';
 import { isCustomDye, extractCustomColor } from '$lib/utils/customColorUtils';
+import { hydrateDye, extractStoredDye } from '$lib/utils/colorConversion';
 
 // お気に入りストア
 export const favoritesStore = writable<Favorite[]>([]);
@@ -49,17 +52,26 @@ export function loadFavorites(): void {
       return;
     }
 
-    // データ検証
-    const validFavorites = data.favorites.filter((favorite) => {
-      return (
-        favorite.id &&
-        favorite.name &&
-        favorite.primaryDye &&
-        favorite.suggestedDyes &&
-        favorite.pattern &&
-        favorite.createdAt
-      );
-    });
+    // データ検証 + ハイドレーション
+    const validFavorites = data.favorites
+      .filter((favorite) => {
+        return (
+          favorite.id &&
+          favorite.name &&
+          favorite.primaryDye &&
+          favorite.suggestedDyes &&
+          favorite.pattern &&
+          favorite.createdAt
+        );
+      })
+      .map((favorite) => ({
+        ...favorite,
+        primaryDye: hydrateDye(favorite.primaryDye),
+        suggestedDyes: [
+          hydrateDye(favorite.suggestedDyes[0]),
+          hydrateDye(favorite.suggestedDyes[1])
+        ] as [Dye, Dye]
+      }));
 
     favoritesStore.set(validFavorites);
   } catch (error) {
@@ -71,10 +83,21 @@ export function loadFavorites(): void {
 // LocalStorageにお気に入りを保存
 function saveFavoritesToStorage(favorites: Favorite[]): void {
   try {
-    const data: FavoritesData = {
-      favorites,
+    // 新形式（軽量）で保存
+    const storedFavorites: StoredFavorite[] = favorites.map(favorite => ({
+      ...favorite,
+      primaryDye: extractStoredDye(favorite.primaryDye),
+      suggestedDyes: [
+        extractStoredDye(favorite.suggestedDyes[0]),
+        extractStoredDye(favorite.suggestedDyes[1])
+      ]
+    }));
+
+    const data = {
+      favorites: storedFavorites,
       version: STORAGE_VERSION,
     };
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
     if (error instanceof DOMException && error.code === 22) {

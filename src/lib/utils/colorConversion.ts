@@ -1,4 +1,11 @@
-import type { HSVColor, OklabColor, RGBColor } from '$lib/types';
+import type { 
+  HSVColor, 
+  RGBColor, 
+  Dye, 
+  CustomColor, 
+  StoredDye, 
+  StoredCustomColor
+} from '$lib/types';
 
 // HSVからRGBに変換
 export function hsvToRgb(hsv: HSVColor): RGBColor {
@@ -80,6 +87,43 @@ export function rgbToHsv(rgb: RGBColor): HSVColor {
 export function rgbToHex(rgb: RGBColor): string {
   const toHex = (n: number) => n.toString(16).padStart(2, '0').toUpperCase();
   return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`;
+}
+
+/**
+ * StoredDyeをDyeにハイドレート（hsv/hexを動的に追加）
+ */
+export function hydrateDye(stored: StoredDye | Dye): Dye {
+  return {
+    ...stored,
+    hsv: rgbToHsv(stored.rgb),
+    hex: rgbToHex(stored.rgb)
+  };
+}
+
+/**
+ * StoredCustomColorをCustomColorにハイドレート
+ */
+export function hydrateCustomColor(stored: StoredCustomColor | CustomColor): CustomColor {
+  return {
+    ...stored,
+    hsv: rgbToHsv(stored.rgb)
+  };
+}
+
+/**
+ * DyeからStoredDyeを抽出（保存用）
+ */
+export function extractStoredDye(dye: Dye): StoredDye {
+  const { hsv, hex, ...stored } = dye;
+  return stored;
+}
+
+/**
+ * CustomColorからStoredCustomColorを抽出（保存用）
+ */
+export function extractStoredCustomColor(color: CustomColor): StoredCustomColor {
+  const { hsv, ...stored } = color;
+  return stored;
 }
 
 // HEXからRGBに変換

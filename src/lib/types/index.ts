@@ -85,6 +85,33 @@ export interface Favorite {
   updatedAt?: string;
 }
 
+// 保存用の軽量型定義（hsv/hex除外）
+export interface StoredDye {
+  id: string;
+  name: string;
+  category: DyeCategory;
+  rgb: RGBColor;
+  tags?: string[];
+}
+
+export interface StoredCustomColor {
+  id: string;
+  name: string;
+  rgb: RGBColor;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface StoredFavorite {
+  id: string;
+  name: string;
+  primaryDye: StoredDye;
+  suggestedDyes: [StoredDye, StoredDye];
+  pattern: HarmonyPattern;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 // LocalStorage用のお気に入りデータ
 export interface FavoritesData {
   favorites: Favorite[];
@@ -114,7 +141,7 @@ export interface CustomColorShare {
   type: 'custom';
   name: string;
   rgb: RGBColor;
-  hsv: HSVColor;
+  // hsv削除（必要時にrgbから計算）
 }
 
 export interface ExtendedSharePaletteData {
