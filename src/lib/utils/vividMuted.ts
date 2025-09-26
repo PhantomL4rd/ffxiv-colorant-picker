@@ -1,5 +1,5 @@
 import type { OklabColor } from '$lib/types';
-import { hexToRgb, rgbToOklab, oklabToRgb, rgbToHex } from './colorConversion';
+import { hexToRgb, rgbToOklab, oklabToRgb, rgbToHex, clipOklabColor } from './colorConversion';
 
 // Vivid/Mutedパラメータ
 export const VIVID_MUTED_PARAMS = {
@@ -15,6 +15,11 @@ export const VIVID_MUTED_PARAMS = {
     highChroma: 0.25,
   }
 };
+// オプション用の型定義
+export interface VividMutedOptions {
+  backgroundHex?: string;
+  hueOffsetRange?: readonly [number, number];
+}
 
 // シード付き擬似乱数生成器
 function seededRandom(seed: number): () => number {
@@ -106,6 +111,89 @@ function adjustChroma(oklab: OklabColor, factor: number): OklabColor {
 // Oklabの彩度を取得
 function getChroma(oklab: OklabColor): number {
   return Math.sqrt(oklab.a * oklab.a + oklab.b * oklab.b);
+}
+
+// WCAGコントラスト比計算
+function getLuminance(rgb: { r: number; g: number; b: number }): number {
+  const toLinear = (c: number): number => {
+    const cs = c / 255;
+    return cs <= 0.03928 ? cs / 12.92 : Math.pow((cs + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * toLinear(rgb.r) + 0.7152 * toLinear(rgb.g) + 0.0722 * toLinear(rgb.b);
+}
+
+function getContrastRatio(color1: string, color2: string): number {
+  const rgb1 = hexToRgb(color1);
+  const rgb2 = hexToRgb(color2);
+  const lum1 = getLuminance(rgb1);
+  const lum2 = getLuminance(rgb2);
+  const brighter = Math.max(lum1, lum2);
+  const darker = Math.min(lum1, lum2);
+  return (brighter + 0.05) / (darker + 0.05);
+}
+
+
+// コントラスト微調整
+function nudgeForContrast(hex: string, bgHex: string, minContrast: number): string {
+  let currentColor = hex;
+  let tries = 0;
+  const maxTries = 6;
+  const adjustStep = 0.06;
+
+  while (getContrastRatio(currentColor, bgHex) < minContrast && tries < maxTries) {
+    const rgb = hexToRgb(currentColor);
+    let oklab = rgbToOklab(rgb);
+    
+    // 背景との関係で明度を調整
+    const bgLum = getLuminance(hexToRgb(bgHex));
+    if (bgLum > 0.5) {
+      // 明るい背景：色を暗くする
+      oklab.L = clamp(oklab.L - adjustStep, 0, 1);
+    } else {
+      // 暗い背景：色を明るくする
+      oklab.L = clamp(oklab.L + adjustStep, 0, 1);
+    }
+    
+    // クリップして変換
+    const clippedOklab = clipOklabColor(oklab);
+    const adjustedRgb = oklabToRgb(clippedOklab);
+    currentColor = rgbToHex(adjustedRgb);
+    tries++;
+  }
+  
+  return currentColor;
+}
+
+// 色相範囲の強制
+function enforceHueRange(
+  offset: number, 
+  range: readonly [number, number], 
+  random: () => number
+): number {
+  const normalizedOffset = normalizeHue(offset);
+  const [min, max] = range;
+  
+  // 範囲チェック
+  if (normalizedOffset >= min && normalizedOffset <= max) {
+    return normalizedOffset;
+  }
+  
+  // 範囲外の場合、再抽選を試行
+  for (let i = 0; i < 8; i++) {
+    const newOffset = normalizeHue(random() * 360);
+    if (newOffset >= min && newOffset <= max) {
+      return newOffset;
+    }
+  }
+  
+  // 最終的に範囲内にクランプ
+  if (normalizedOffset < min) {
+    return min;
+  } else if (normalizedOffset > max) {
+    return max;
+  }
+  
+  return normalizedOffset;
 }
 
 // 適応的な調整値を計算
@@ -269,61 +357,91 @@ function makeBridge(
 // Vivid配色生成
 export function generateVividHarmony(
   baseHex: string,
-  seed?: number
+  seed?: number,
+  options?: VividMutedOptions
 ): string[] {
   const random = seed ? seededRandom(seed) : () => Math.random();
+  const bgHex = options?.backgroundHex || '#ffffff';
+  const hueRange = options?.hueOffsetRange || VIVID_MUTED_PARAMS.hueOffsetRange;
   
   // Base色をOklabに変換
   const baseRgb = hexToRgb(baseHex);
   const baseOklab = rgbToOklab(baseRgb);
   
   // 補色を優遇した色相オフセットを生成
-  const hueOffset = generateComplementaryBiasedHue(random);
+  let hueOffset = generateComplementaryBiasedHue(random);
+  
+  // hueOffsetRangeを適用
+  if (hueRange[0] !== 0 || hueRange[1] !== 360) {
+    hueOffset = enforceHueRange(hueOffset, hueRange, random);
+  }
   
   // Adventure色を生成（Vivid）
-  const adventureOklab = makeAdventure(baseOklab, true, hueOffset);
+  let adventureOklab = makeAdventure(baseOklab, true, hueOffset);
   
   // Bridge色を生成
-  const bridgeOklab = makeBridge(baseOklab, adventureOklab, random);
+  let bridgeOklab = makeBridge(baseOklab, adventureOklab, random);
   
-  // RGBに変換してHEXに
+  // sRGBクリップ
+  adventureOklab = clipOklabColor(adventureOklab);
+  bridgeOklab = clipOklabColor(bridgeOklab);
+  
+  // RGB変換してHEX化
   const adventureRgb = oklabToRgb(adventureOklab);
   const bridgeRgb = oklabToRgb(bridgeOklab);
   
-  return [
-    baseHex,
-    rgbToHex(bridgeRgb),
-    rgbToHex(adventureRgb)
-  ];
+  let bridgeHex = rgbToHex(bridgeRgb);
+  let adventureHex = rgbToHex(adventureRgb);
+  
+  // コントラスト調整
+  bridgeHex = nudgeForContrast(bridgeHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
+  adventureHex = nudgeForContrast(adventureHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
+  
+  return [baseHex, bridgeHex, adventureHex];
 }
 
 // Muted配色生成
 export function generateMutedHarmony(
   baseHex: string,
-  seed?: number
+  seed?: number,
+  options?: VividMutedOptions
 ): string[] {
   const random = seed ? seededRandom(seed) : () => Math.random();
+  const bgHex = options?.backgroundHex || '#ffffff';
+  const hueRange = options?.hueOffsetRange || VIVID_MUTED_PARAMS.hueOffsetRange;
   
   // Base色をOklabに変換
   const baseRgb = hexToRgb(baseHex);
   const baseOklab = rgbToOklab(baseRgb);
   
   // 近似色を優遇した色相オフセットを生成
-  const hueOffset = generateAnalogousBiasedHue(random);
+  let hueOffset = generateAnalogousBiasedHue(random);
+  
+  // hueOffsetRangeを適用
+  if (hueRange[0] !== 0 || hueRange[1] !== 360) {
+    hueOffset = enforceHueRange(hueOffset, hueRange, random);
+  }
   
   // Adventure色を生成（Muted）
-  const adventureOklab = makeAdventure(baseOklab, false, hueOffset);
+  let adventureOklab = makeAdventure(baseOklab, false, hueOffset);
   
   // Bridge色を生成
-  const bridgeOklab = makeBridge(baseOklab, adventureOklab, random);
+  let bridgeOklab = makeBridge(baseOklab, adventureOklab, random);
   
-  // RGBに変換してHEXに
+  // sRGBクリップ
+  adventureOklab = clipOklabColor(adventureOklab);
+  bridgeOklab = clipOklabColor(bridgeOklab);
+  
+  // RGB変換してHEX化
   const adventureRgb = oklabToRgb(adventureOklab);
   const bridgeRgb = oklabToRgb(bridgeOklab);
   
-  return [
-    baseHex,
-    rgbToHex(bridgeRgb),
-    rgbToHex(adventureRgb)
-  ];
+  let bridgeHex = rgbToHex(bridgeRgb);
+  let adventureHex = rgbToHex(adventureRgb);
+  
+  // コントラスト調整
+  bridgeHex = nudgeForContrast(bridgeHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
+  adventureHex = nudgeForContrast(adventureHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
+  
+  return [baseHex, bridgeHex, adventureHex];
 }

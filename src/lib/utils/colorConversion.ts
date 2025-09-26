@@ -204,6 +204,17 @@ export function oklabToRgb(oklab: OklabColor): RGBColor {
   };
 }
 
+// sRGBクリップ処理（色相を保持）
+export function clipOklabColor(oklab: OklabColor): OklabColor {
+  const rgb = oklabToRgb(oklab);
+  const clippedRgb = {
+    r: Math.round(Math.max(0, Math.min(255, rgb.r))),
+    g: Math.round(Math.max(0, Math.min(255, rgb.g))),
+    b: Math.round(Math.max(0, Math.min(255, rgb.b)))
+  };
+  return rgbToOklab(clippedRgb);
+}
+
 /**
  * Calculates color difference (ΔE) between two colors in Oklab space.
  *
