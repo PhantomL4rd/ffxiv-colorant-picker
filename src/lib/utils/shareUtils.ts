@@ -11,6 +11,44 @@ import { setPaletteDirectly } from '$lib/stores/selection';
 import { isCustomDye } from '$lib/utils/customColorUtils';
 import LZString from 'lz-string';
 
+// セキュリティ定数
+const MAX_QUERY_LENGTH = 2048; // URLクエリパラメータの最大長
+const MAX_JSON_LENGTH = 10000; // 解凍後JSONの最大長
+const MAX_NAME_LENGTH = 50; // カスタムカラー名の最大長
+
+// 検証ヘルパー関数
+function isValidRgbValue(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 255;
+}
+
+function isValidHsvValue(h: unknown, s: unknown, v: unknown): boolean {
+  return (
+    typeof h === 'number' && h >= 0 && h <= 360 &&
+    typeof s === 'number' && s >= 0 && s <= 100 &&
+    typeof v === 'number' && v >= 0 && v <= 100
+  );
+}
+
+function isValidString(value: unknown, maxLength: number): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= maxLength;
+}
+
+function isValidRgbObject(rgb: unknown): rgb is { r: number; g: number; b: number } {
+  return (
+    typeof rgb === 'object' && rgb !== null &&
+    'r' in rgb && 'g' in rgb && 'b' in rgb &&
+    isValidRgbValue(rgb.r) && isValidRgbValue(rgb.g) && isValidRgbValue(rgb.b)
+  );
+}
+
+function isValidHsvObject(hsv: unknown): hsv is { h: number; s: number; v: number } {
+  return (
+    typeof hsv === 'object' && hsv !== null &&
+    'h' in hsv && 's' in hsv && 'v' in hsv &&
+    isValidHsvValue(hsv.h, hsv.s, hsv.v)
+  );
+}
+
 interface SharePaletteData {
   p: string; // primary dye id
   s: [string, string]; // secondary dye ids
@@ -92,23 +130,32 @@ export function decodePaletteFromUrl(url: string): SharePaletteData | null {
     const urlObj = new URL(url);
     const paletteParam = urlObj.searchParams.get('palette');
 
-    if (!paletteParam) {
+    // 長さ制限チェック
+    if (!paletteParam || paletteParam.length > MAX_QUERY_LENGTH) {
       return null;
     }
 
     // 圧縮されたデータを解凍
     const jsonString = LZString.decompressFromEncodedURIComponent(paletteParam);
 
-    if (!jsonString) {
-      console.warn('Failed to decompress palette data');
+    // 解凍後の長さ制限チェック
+    if (!jsonString || jsonString.length > MAX_JSON_LENGTH) {
+      console.warn('Failed to decompress or decompressed data too large');
       return null;
     }
 
     const data = JSON.parse(jsonString) as SharePaletteData;
 
-    // 必須フィールドの検証
-    if (!data.p || !Array.isArray(data.s) || data.s.length !== 2 || !data.pt) {
-      console.warn('Invalid palette data structure');
+    // 厳密な型・構造チェック
+    if (
+      !isValidString(data.p, 100) ||
+      !Array.isArray(data.s) ||
+      data.s.length !== 2 ||
+      !isValidString(data.s[0], 100) ||
+      !isValidString(data.s[1], 100) ||
+      !isValidString(data.pt, 50)
+    ) {
+      console.warn('Invalid palette data structure or value');
       return null;
     }
 
@@ -158,23 +205,38 @@ export function decodeCustomPaletteFromUrl(url: string): ExtendedSharePaletteDat
     const urlObj = new URL(url);
     const paletteParam = urlObj.searchParams.get('custom-palette');
 
-    if (!paletteParam) {
+    // 長さ制限チェック
+    if (!paletteParam || paletteParam.length > MAX_QUERY_LENGTH) {
       return null;
     }
 
     // 圧縮されたデータを解凍
     const jsonString = LZString.decompressFromEncodedURIComponent(paletteParam);
 
-    if (!jsonString) {
-      console.warn('Failed to decompress custom palette data');
+    // 解凍後の長さ制限チェック
+    if (!jsonString || jsonString.length > MAX_JSON_LENGTH) {
+      console.warn('Failed to decompress or decompressed custom data too large');
       return null;
     }
 
     const data = JSON.parse(jsonString) as ExtendedSharePaletteData;
 
-    // 必須フィールドの検証
-    if (!data.p || !Array.isArray(data.s) || data.s.length !== 2 || !data.pt) {
-      console.warn('Invalid custom palette data structure');
+    // カスタムデータの厳密な検証
+    if (
+      !data.p ||
+      typeof data.p !== 'object' ||
+      !('type' in data.p) ||
+      data.p.type !== 'custom' ||
+      !('name' in data.p) || !isValidString(data.p.name, MAX_NAME_LENGTH) ||
+      !('rgb' in data.p) || !isValidRgbObject(data.p.rgb) ||
+      !('hsv' in data.p) || !isValidHsvObject(data.p.hsv) ||
+      !Array.isArray(data.s) ||
+      data.s.length !== 2 ||
+      !isValidString(data.s[0], 100) ||
+      !isValidString(data.s[1], 100) ||
+      !isValidString(data.pt, 50)
+    ) {
+      console.warn('Invalid custom palette data structure or value');
       return null;
     }
 
