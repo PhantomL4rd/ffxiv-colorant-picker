@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
-import type { CustomColor, CustomColorsData, RGBColor, HSVColor } from '$lib/types';
-import { rgbToHsv } from '$lib/utils/colorConversion';
+import type { CustomColor, CustomColorsData, StoredCustomColor, RGBColor, HSVColor } from '$lib/types';
+import { rgbToHsv, hydrateCustomColor, extractStoredCustomColor } from '$lib/utils/colorConversion';
 
 const STORAGE_KEY = 'ffxiv-colorant-picker:custom-colors';
 const VERSION = '1.0.0';
@@ -13,6 +13,12 @@ export const customColorsStore = writable<CustomColor[]>([]);
  */
 export function loadCustomColors(): void {
   try {
+    // ブラウザ環境チェック
+    if (typeof localStorage === 'undefined') {
+      customColorsStore.set([]);
+      return;
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
       customColorsStore.set([]);
@@ -21,12 +27,15 @@ export function loadCustomColors(): void {
 
     const data: CustomColorsData = JSON.parse(stored);
 
-    // 日付文字列をDateオブジェクトに変換
-    const colors = data.colors.map((color) => ({
-      ...color,
-      createdAt: new Date(color.createdAt),
-      updatedAt: new Date(color.updatedAt),
-    }));
+    // ハイドレーション + 日付文字列をDateオブジェクトに変換
+    const colors = data.colors.map((color) => {
+      const hydratedColor = hydrateCustomColor(color);
+      return {
+        ...hydratedColor,
+        createdAt: new Date(hydratedColor.createdAt),
+        updatedAt: new Date(hydratedColor.updatedAt),
+      };
+    });
 
     customColorsStore.set(colors);
   } catch (error) {
@@ -40,8 +49,13 @@ export function loadCustomColors(): void {
  */
 function saveToStorage(colors: CustomColor[]): void {
   try {
-    const data: CustomColorsData = {
-      colors,
+    // 新形式（軽量）で保存
+    const storedColors: StoredCustomColor[] = colors.map(color => 
+      extractStoredCustomColor(color)
+    );
+
+    const data = {
+      colors: storedColors,
       version: VERSION,
       lastUpdated: new Date().toISOString(),
     };
