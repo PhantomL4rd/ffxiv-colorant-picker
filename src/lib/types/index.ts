@@ -36,6 +36,7 @@ export interface OklabColor {
   b: number; // unbounded but in practice ranging from -0.5 to +0.5
 }
 
+
 // カララントカテゴリ
 export type DyeCategory = '白系' | '赤系' | '茶系' | '黄系' | '緑系' | '青系' | '紫系' | 'レア系';
 
@@ -47,7 +48,8 @@ export type HarmonyPattern =
   | 'monochromatic'
   | 'similar'
   | 'contrast'
-  | 'random';
+  | 'vivid'
+  | 'muted';
 
 // 組み合わせ
 export interface DyeCombination {

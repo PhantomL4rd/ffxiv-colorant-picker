@@ -1,5 +1,6 @@
 import type { Dye, DyeCandidate, HarmonyPattern, RGBColor } from '$lib/types';
-import { deltaEOklab, hsvToRgb, rgbToOklab } from './colorConversion';
+import { deltaEOklab, hsvToRgb, rgbToOklab, rgbToHex, hexToRgb } from './colorConversion';
+import { generateVividHarmony, generateMutedHarmony } from './vividMuted';
 
 // トライアド（三色配色）- 色相環で120度ずつ離れた色
 export function calculateTriadic(baseHue: number): [number, number] {
@@ -101,8 +102,43 @@ export function findNearestDyesInOklab(targets: RGBColor[], palette: Dye[]): Dye
 export function generateSuggestedDyes(
   primaryDye: Dye,
   pattern: HarmonyPattern,
-  allDyes: Dye[]
+  allDyes: Dye[],
+  seed?: number
 ): [Dye, Dye] {
+  // Vivid/Mutedの場合は専用ロジックを使用
+  if (pattern === 'vivid' || pattern === 'muted') {
+    const baseHex = rgbToHex(primaryDye.rgb);
+    let targetColors: string[];
+    
+    if (pattern === 'vivid') {
+      targetColors = generateVividHarmony(baseHex, seed);
+    } else {
+      targetColors = generateMutedHarmony(baseHex, seed);
+    }
+    
+    // targetColors[0]はbaseHexと同じなので、[1]と[2]を使用
+    const bridgeHex = targetColors[1];
+    const adventureHex = targetColors[2];
+    
+    // HEXからRGBに変換してnearest dyeを検索
+    const bridgeRgb = hexToRgb(bridgeHex);
+    const adventureRgb = hexToRgb(adventureHex);
+    
+    // より多様性を保つため、個別に最適な色を検索
+    const availableDyes = allDyes.filter((dye) => dye.id !== primaryDye.id);
+    
+    const bridgeMatches = findNearestDyesInOklab([bridgeRgb], availableDyes);
+    const bridgeDye = bridgeMatches.length > 0 ? bridgeMatches[0].dye : availableDyes[0];
+    
+    // Adventure色の検索時は、すでに選ばれたbridge色を除外
+    const remainingDyes = availableDyes.filter(dye => dye.id !== bridgeDye.id);
+    const adventureMatches = findNearestDyesInOklab([adventureRgb], remainingDyes);
+    const adventureDye = adventureMatches.length > 0 ? adventureMatches[0].dye : remainingDyes[0];
+    
+    return [bridgeDye, adventureDye];
+  }
+
+  // 従来のロジック（その他のパターン）
   let targetHues: [number, number];
 
   switch (pattern) {

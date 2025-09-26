@@ -1,6 +1,7 @@
 import type { 
   HSVColor, 
-  RGBColor, 
+  RGBColor,
+  OklabColor,
   Dye, 
   CustomColor, 
   StoredDye, 
@@ -96,7 +97,8 @@ export function hydrateDye(stored: StoredDye | Dye): Dye {
   return {
     ...stored,
     hsv: rgbToHsv(stored.rgb),
-    hex: rgbToHex(stored.rgb)
+    hex: rgbToHex(stored.rgb),
+    oklab: rgbToOklab(stored.rgb)
   };
 }
 
@@ -217,3 +219,4 @@ export function deltaEOklab(c1: OklabColor, c2: OklabColor): number {
   // Euclidean distance in Oklab space
   return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB);
 }
+

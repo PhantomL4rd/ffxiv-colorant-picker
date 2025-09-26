@@ -11,10 +11,12 @@ export const selectionStore = writable<{
   primaryDye: Dye | ExtendedDye | null;
   suggestedDyes: [Dye, Dye] | null;
   pattern: HarmonyPattern;
+  harmonySeed: number;
 }>({
   primaryDye: null,
   suggestedDyes: null,
   pattern: 'triadic',
+  harmonySeed: Date.now(),
 });
 
 // 基本カララント（またはカスタムカラー）を選択
@@ -28,6 +30,8 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
       ? allDyes.filter((d) => !d.tags?.includes('metallic'))
       : allDyes;
 
+    // 新しいシード値を生成（毎回異なる組み合わせ）
+    const newSeed = Date.now();
     let suggested: [Dye, Dye] | null = null;
 
     if (dyesForSuggestion.length > 0) {
@@ -43,15 +47,16 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
           oklab: dye.oklab,
           tags: dye.tags,
         };
-        suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, dyesForSuggestion);
+        suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, dyesForSuggestion, newSeed);
       } else {
-        suggested = generateSuggestedDyes(dye, state.pattern, dyesForSuggestion);
+        suggested = generateSuggestedDyes(dye, state.pattern, dyesForSuggestion, newSeed);
       }
     }
 
     return {
       ...state,
       primaryDye: dye,
+      harmonySeed: newSeed,
       suggestedDyes: suggested,
     };
   });
@@ -61,6 +66,7 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
 export function updatePattern(pattern: HarmonyPattern): void {
   selectionStore.update((state) => {
     let suggested = state.suggestedDyes;
+    let newSeed = state.harmonySeed;
 
     // 基本カララントが選択されている場合、提案を再生成
     if (state.primaryDye) {
@@ -72,15 +78,19 @@ export function updatePattern(pattern: HarmonyPattern): void {
         ? allDyes.filter((d) => !d.tags?.includes('metallic'))
         : allDyes;
 
+      // 新しいシード値を生成（配色パターン変更時も異なる組み合わせ）
+      newSeed = Date.now();
+      
       suggested =
         dyesForSuggestion.length > 0
-          ? generateSuggestedDyes(state.primaryDye, pattern, dyesForSuggestion)
+          ? generateSuggestedDyes(state.primaryDye, pattern, dyesForSuggestion, newSeed)
           : null;
     }
 
     return {
       ...state,
       pattern,
+      harmonySeed: newSeed,
       suggestedDyes: suggested,
     };
   });
@@ -99,13 +109,17 @@ export function regenerateSuggestions(): void {
       ? allDyes.filter((d) => !d.tags?.includes('metallic'))
       : allDyes;
 
+    // 新しいシード値を生成（Vivid/Mutedモード時のみ効果的）
+    const newSeed = Date.now();
+
     const suggested =
       dyesForSuggestion.length > 0
-        ? generateSuggestedDyes(state.primaryDye, state.pattern, dyesForSuggestion)
+        ? generateSuggestedDyes(state.primaryDye, state.pattern, dyesForSuggestion, newSeed)
         : null;
 
     return {
       ...state,
+      harmonySeed: newSeed,
       suggestedDyes: suggested,
     };
   });
@@ -117,6 +131,7 @@ export function clearSelection(): void {
     primaryDye: null,
     suggestedDyes: null,
     pattern: 'triadic',
+    harmonySeed: Date.now(),
   });
 }
 
@@ -130,6 +145,7 @@ export function setPaletteDirectly(
     primaryDye,
     suggestedDyes,
     pattern,
+    harmonySeed: Date.now(),
   });
 }
 

@@ -8,7 +8,8 @@ export const PATTERN_LABELS: Record<HarmonyPattern, string> = {
   monochromatic: '同系色',
   similar: 'ナチュラル',
   contrast: 'コントラスト',
-  random: 'ランダム',
+  vivid: 'ビビッド',
+  muted: 'ミュート',
 };
 
 // パターンの説明
@@ -19,7 +20,8 @@ export const PATTERN_DESCRIPTIONS: Record<HarmonyPattern, string> = {
   monochromatic: '統一感のある落ち着いた3色',
   similar: '馴染みやすい近い色味の3色',
   contrast: 'はっきりとした対比のある3色',
-  random: 'ランダムに選ばれた予想外の3色',
+  vivid: '鮮やかで元気な印象の組み合わせ',
+  muted: '落ち着いた大人っぽい組み合わせ',
 };
 
 // パターンの配列（セレクトボックス用）
@@ -57,6 +59,16 @@ export const PATTERN_OPTIONS: Array<{
     value: 'contrast',
     label: PATTERN_LABELS.contrast,
     description: PATTERN_DESCRIPTIONS.contrast,
+  },
+  {
+    value: 'vivid',
+    label: PATTERN_LABELS.vivid,
+    description: PATTERN_DESCRIPTIONS.vivid,
+  },
+  {
+    value: 'muted',
+    label: PATTERN_LABELS.muted,
+    description: PATTERN_DESCRIPTIONS.muted,
   },
 ];
 

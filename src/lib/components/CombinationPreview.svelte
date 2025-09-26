@@ -1,11 +1,12 @@
 <script lang="ts">
-import type { Dye } from '$lib/types';
-import { selectPrimaryDye } from '$lib/stores/selection';
+import type { Dye, HarmonyPattern } from '$lib/types';
+import { selectPrimaryDye, regenerateSuggestions } from '$lib/stores/selection';
+import { RefreshCw } from 'lucide-svelte';
 
 interface Props {
   selectedDye: Dye | null;
   suggestedDyes: [Dye, Dye] | null;
-  pattern: string;
+  pattern: HarmonyPattern;
 }
 
 const { selectedDye, suggestedDyes, pattern }: Props = $props();
@@ -13,6 +14,13 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
 function handleSuggestedDyeClick(dye: Dye): void {
   selectPrimaryDye(dye);
 }
+
+function handleRegenerate(): void {
+  regenerateSuggestions();
+}
+
+// Vivid/Mutedモードかどうかを判定
+const isRandomMode = $derived(pattern === 'vivid' || pattern === 'muted');
 </script>
 
 <div class="card bg-base-100 shadow-lg">

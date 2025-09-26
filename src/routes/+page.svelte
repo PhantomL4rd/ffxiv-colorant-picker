@@ -6,7 +6,6 @@ import {
   selectionStore,
   selectPrimaryDye,
   updatePattern,
-  regenerateSuggestions,
 } from '$lib/stores/selection';
 import {
   filterStore,
@@ -99,6 +98,8 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
     'monochromatic',
     'similar',
     'contrast',
+    'vivid',
+    'muted',
   ];
   const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
 
@@ -111,8 +112,10 @@ function handleRandomPick(randomDyes: [Dye, Dye, Dye]) {
 
 function handleExcludeMetallicChange() {
   toggleExcludeMetallic();
-  // メタリック除外フィルターが変更されたら配色候補を再生成
-  regenerateSuggestions();
+  // メタリック除外フィルターが変更されたら現在の色で新しい提案を生成
+  if (selectedDye) {
+    selectPrimaryDye(selectedDye);
+  }
 }
 
 // カスタムカラー選択ハンドラー
