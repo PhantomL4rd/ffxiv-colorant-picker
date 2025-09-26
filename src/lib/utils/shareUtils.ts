@@ -62,6 +62,11 @@ export function generateShareUrl(favorite: Favorite): string {
   // カスタムカラーか通常のカララントか判定
   const isCustom = favorite.primaryDye.tags?.includes('custom');
 
+  // ベースURLを取得（favoritesパスを除外）
+  const currentUrl = new URL(window.location.href);
+  // パス名からfavoritesを削除してルートパスに設定
+  currentUrl.pathname = currentUrl.pathname.replace(/\/favorites\/?$/, '/');
+
   if (isCustom) {
     // カスタムカラーの場合は拡張データ形式で保存
     const customColorShare: CustomColorShare = {
@@ -80,7 +85,6 @@ export function generateShareUrl(favorite: Favorite): string {
     try {
       const jsonString = JSON.stringify(extendedData);
       const compressedData = LZString.compressToEncodedURIComponent(jsonString);
-      const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('custom-palette', compressedData);
       return currentUrl.toString();
     } catch (error) {
@@ -98,7 +102,6 @@ export function generateShareUrl(favorite: Favorite): string {
     try {
       const jsonString = JSON.stringify(data);
       const compressedData = LZString.compressToEncodedURIComponent(jsonString);
-      const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('palette', compressedData);
       return currentUrl.toString();
     } catch (error) {
