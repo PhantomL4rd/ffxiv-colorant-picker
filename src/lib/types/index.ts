@@ -6,8 +6,14 @@ export interface Dye {
   hsv: HSVColor;
   rgb: RGBColor;
   hex: string;
+  oklab: OklabColor;
   tags?: string[];
 }
+
+export type DyeCandidate = {
+  dye: Dye;
+  delta: number;
+};
 
 // HSV色空間
 export interface HSVColor {
@@ -21,6 +27,13 @@ export interface RGBColor {
   r: number; // 0-255
   g: number; // 0-255
   b: number; // 0-255
+}
+
+// Oklab色空間
+export interface OklabColor {
+  L: number; // 0.0-1.0
+  a: number; // unbounded but in practice ranging from -0.5 to +0.5
+  b: number; // unbounded but in practice ranging from -0.5 to +0.5
 }
 
 // カララントカテゴリ

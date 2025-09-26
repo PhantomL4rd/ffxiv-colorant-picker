@@ -4,6 +4,7 @@ import { generateSuggestedDyes } from '$lib/utils/colorHarmony';
 import { filterStore } from './filter';
 import { dyeStore } from './dyes';
 import { isCustomDye } from '$lib/utils/customColorUtils';
+import { rgbToOklab } from '$lib/utils/colorConversion';
 
 // 選択状態ストア
 export const selectionStore = writable<{
@@ -39,6 +40,7 @@ export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
           hsv: dye.hsv,
           rgb: dye.rgb,
           hex: dye.hex,
+          oklab: dye.oklab,
           tags: dye.tags,
         };
         suggested = generateSuggestedDyes(dyeForHarmony, state.pattern, dyesForSuggestion);
@@ -141,6 +143,7 @@ export function selectCustomColor(customColor: CustomColor): void {
     hsv: customColor.hsv,
     rgb: customColor.rgb,
     hex: `#${customColor.rgb.r.toString(16).padStart(2, '0')}${customColor.rgb.g.toString(16).padStart(2, '0')}${customColor.rgb.b.toString(16).padStart(2, '0')}`,
+    oklab: rgbToOklab(customColor.rgb),
     tags: ['custom'],
     source: 'custom',
     customColor,
