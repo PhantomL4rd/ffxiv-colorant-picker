@@ -1,4 +1,5 @@
-import type { Dye, HarmonyPattern } from '$lib/types';
+import type { Dye, DyeCandidate, HarmonyPattern, RGBColor } from '$lib/types';
+import { deltaEOklab, hsvToRgb, rgbToOklab } from './colorConversion';
 
 // トライアド（三色配色）- 色相環で120度ずつ離れた色
 export function calculateTriadic(baseHue: number): [number, number] {
@@ -67,6 +68,35 @@ export function findNearestDyes(targetHues: number[], dyes: Dye[], excludeDye?: 
   return result;
 }
 
+/**
+ * Find the nearest dyes for each targets in a palette based on color difference in Oklab space.
+ *
+ * @param targets
+ * @param palette
+ * @returns
+ */
+export function findNearestDyesInOklab(targets: RGBColor[], palette: Dye[]): DyeCandidate[] {
+  const candidatesByTarget = targets.map((target) => {
+    const targetOklab = rgbToOklab(target);
+    const candidates: DyeCandidate[] = palette.map((dye) => (
+      { dye, delta: deltaEOklab(targetOklab, rgbToOklab(dye.rgb)) }
+    ));
+    return candidates.sort((a, b) => a.delta - b.delta);
+  });
+
+  const results: DyeCandidate[] = [];
+  const used = new Set<string>();
+  for (const candidates of candidatesByTarget) {
+    const candidate = candidates.find((c) => !used.has(c.dye.id));
+    if (candidate) {
+      results.push(candidate);
+      used.add(candidate.dye.id);
+    }
+  }
+
+  return results;
+}
+
 // 配色パターンに基づいて提案染料を生成
 export function generateSuggestedDyes(
   primaryDye: Dye,
@@ -98,7 +128,10 @@ export function generateSuggestedDyes(
       targetHues = calculateTriadic(primaryDye.hsv.h);
   }
 
-  const nearestDyes = findNearestDyes(targetHues, allDyes, primaryDye);
+  const targets = targetHues.map((h) => (hsvToRgb({ ...primaryDye.hsv, h })));
+  const nearestDyes = findNearestDyesInOklab(
+    targets, allDyes.filter((dye) => dye.id !== primaryDye.id)
+  ).map((c) => c.dye);
 
   // 2色に満たない場合はランダムで補完
   while (nearestDyes.length < 2) {

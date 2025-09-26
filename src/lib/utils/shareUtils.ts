@@ -11,6 +11,7 @@ import { setPaletteDirectly } from '$lib/stores/selection';
 import { isCustomDye } from '$lib/utils/customColorUtils';
 import { rgbToHsv, rgbToHex } from '$lib/utils/colorConversion';
 import LZString from 'lz-string';
+import { rgbToOklab } from './colorConversion';
 
 // セキュリティ定数
 const MAX_QUERY_LENGTH = 2048; // URLクエリパラメータの最大長
@@ -254,6 +255,7 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
           hsv: rgbToHsv(customData.p.rgb), // rgbから計算
           rgb: customData.p.rgb,
           hex: rgbToHex(customData.p.rgb), // rgbから計算
+          oklab: rgbToOklab(customData.p.rgb),
           tags: ['custom'],
           source: 'custom',
         };

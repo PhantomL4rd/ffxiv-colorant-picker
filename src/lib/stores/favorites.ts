@@ -147,6 +147,7 @@ export function saveFavorite(input: {
           hsv: input.primaryDye.hsv,
           rgb: input.primaryDye.rgb,
           hex: input.primaryDye.hex,
+          oklab: input.primaryDye.oklab,
           tags: ['custom'],
         };
       } else {

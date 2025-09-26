@@ -4,7 +4,7 @@ import type {
   Dye, 
   CustomColor, 
   StoredDye, 
-  StoredCustomColor 
+  StoredCustomColor
 } from '$lib/types';
 
 // HSVからRGBに変換
@@ -137,4 +137,83 @@ export function hexToRgb(hex: string): RGBColor {
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16),
   };
+}
+
+/**
+ * Converts an RGB color to Oklab space.
+ * 
+ * @param rgb a color in RGB space
+ * @returns a color in Oklab space
+ */
+export function rgbToOklab(rgb: RGBColor): OklabColor {
+  const toLinear = (c: number) => {
+    const cs = c / 255;
+    return cs <= 0.04045 ? cs / 12.92 : Math.pow((cs + 0.055) / 1.055, 2.4);
+  };
+  const r = toLinear(rgb.r);
+  const g = toLinear(rgb.g);
+  const b = toLinear(rgb.b);
+
+  const l = r * 0.4122214708 + g * 0.5363325363 + b * 0.0514459929;
+  const m = r * 0.2119034982 + g * 0.6806995451 + b * 0.1073969566;
+  const s = r * 0.0883024619 + g * 0.2817188376 + b * 0.6299787005;
+
+  const l_ = Math.cbrt(l);
+  const m_ = Math.cbrt(m);
+  const s_ = Math.cbrt(s);
+
+  return {
+    L: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+    a: 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+    b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
+  };
+}
+
+/**
+ * Converts an Oklab color to RGB space.
+ * 
+ * @param oklab a color in Oklab space
+ * @returns a color in RGB space
+ */
+export function oklabToRgb(oklab: OklabColor): RGBColor {
+  const l_ = oklab.L + 0.3963377774 * oklab.a + 0.2158037573 * oklab.b;
+  const m_ = oklab.L - 0.1055613458 * oklab.a - 0.0638541728 * oklab.b;
+  const s_ = oklab.L - 0.0894841775 * oklab.a - 1.2914855480 * oklab.b;
+
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+
+  const r = l * +4.0767416621 + m * -3.3077115913 + s * +0.2309699292;
+  const g = l * -1.2684380046 + m * +2.6097574011 + s * -0.3413193965;
+  const b = l * -0.0041960863 + m * -0.7034186147 + s * +1.7076147010;
+
+  const toSRGB = (c: number) => {
+    const cs = Math.max(0, Math.min(1, c));
+    return cs < 0.0031308
+      ? Math.round(cs * 12.92 * 255)
+      : Math.round((1.055 * Math.pow(cs, 1 / 2.4) - 0.055) * 255);
+  };
+
+  return {
+    r: toSRGB(r),
+    g: toSRGB(g),
+    b: toSRGB(b),
+  };
+}
+
+/**
+ * Calculates color difference (ΔE) between two colors in Oklab space.
+ *
+ * @param c1 a color in Oklab color space
+ * @param c2 a color in Oklab color space
+ * @returns the distance between the two colors
+ */
+export function deltaEOklab(c1: OklabColor, c2: OklabColor): number {
+  const deltaL = c1.L - c2.L;
+  const deltaA = c1.a - c2.a;
+  const deltaB = c1.b - c2.b;
+
+  // Euclidean distance in Oklab space
+  return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB);
 }

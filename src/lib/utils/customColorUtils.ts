@@ -1,5 +1,5 @@
 import type { CustomColor, Dye, ExtendedDye, RGBColor } from '$lib/types';
-import { rgbToHex } from '$lib/utils/colorConversion';
+import { rgbToHex, rgbToOklab } from '$lib/utils/colorConversion';
 
 /**
  * CustomColorをDyeライクオブジェクトに変換
@@ -12,6 +12,7 @@ export function customColorToDye(customColor: CustomColor): Dye {
     hsv: customColor.hsv,
     rgb: customColor.rgb,
     hex: rgbToHex(customColor.rgb),
+    oklab: rgbToOklab(customColor.rgb),
     tags: ['custom'],
   };
 }
