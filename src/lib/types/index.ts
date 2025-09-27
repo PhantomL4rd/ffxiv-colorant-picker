@@ -36,6 +36,13 @@ export interface OklabColor {
   b: number; // unbounded but in practice ranging from -0.5 to +0.5
 }
 
+// Oklch色空間
+export interface OklchColor {
+  L: number; // 0.0-1.0
+  C: number; // 0.0-? (typically up to ~0.5)
+  h: number; // 0-360
+}
+
 // カララントカテゴリ
 export type DyeCategory = '白系' | '赤系' | '茶系' | '黄系' | '緑系' | '青系' | '紫系' | 'レア系';
 
