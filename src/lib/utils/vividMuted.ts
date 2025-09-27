@@ -344,17 +344,32 @@ function makeBridge(
   random: () => number,
   params = VIVID_MUTED_PARAMS
 ): OklabColor {
-  const t = clamp(params.bridgeT + (random() - 0.5) * params.bridgeJitter * 2, 0.25, 0.75);
-
-  const interpolated = {
-    L: base.L + (adventure.L - base.L) * t,
-    a: base.a + (adventure.a - base.a) * t,
-    b: base.b + (adventure.b - base.b) * t,
+  // 黄金比（φ - 1 ≈ 0.618の逆数）でベース寄りに配置
+  const t = 0.382;
+  
+  // Lightness: 線形補間
+  const L = base.L + (adventure.L - base.L) * t;
+  
+  // 極座標での補間（Hueは最短経路、Chromaは減衰付き）
+  const Ca = Math.hypot(base.a, base.b);
+  const Cb = Math.hypot(adventure.a, adventure.b);
+  const Ha = Math.atan2(base.b, base.a);
+  const Hb = Math.atan2(adventure.b, adventure.a);
+  
+  // Hueの最短経路補間
+  let dH = Hb - Ha;
+  if (dH > Math.PI) dH -= 2 * Math.PI;
+  if (dH < -Math.PI) dH += 2 * Math.PI;
+  const H = Ha + dH * t;
+  
+  // Chromaは線形補間後に0.85倍で弱める（つなぎ感を出す）
+  const C = (Ca * (1 - t) + Cb * t) * 0.85;
+  
+  return {
+    L,
+    a: C * Math.cos(H),
+    b: C * Math.sin(H),
   };
-
-  // Bridge色は少し彩度を落として"つなぎ"に寄せる
-  const bridgeChromaFactor = 0.9;
-  return adjustChroma(interpolated, bridgeChromaFactor);
 }
 
 /**
