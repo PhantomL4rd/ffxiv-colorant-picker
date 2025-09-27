@@ -24,7 +24,7 @@ function huePenalty(dh: number, theta: number): number {
   return x * x;
 }
 
-export function selectAnalogousDyes(
+export function selectMonochromaticDyes(
   baseDye: Dye,
   palette: Dye[],
   opts: Options = {}

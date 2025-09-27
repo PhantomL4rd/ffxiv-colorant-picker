@@ -1,6 +1,6 @@
 import type { Dye, DyeCandidate, HarmonyPattern, RGBColor } from '$lib/types';
 import { deltaEOklab, hsvToRgb, rgbToOklab, rgbToHex, hexToRgb } from './colorConversion';
-import { selectAnalogousDyes } from './selector/analogous';
+import { selectMonochromaticDyes } from './selector/monochromatic';
 import { generateVividHarmony, generateMutedHarmony } from './vividMuted';
 
 // トライアド（三色配色）- 色相環で120度ずつ離れた色
@@ -109,7 +109,7 @@ export function generateSuggestedDyes(
   seed?: number
 ): [Dye, Dye] {
   if (pattern === 'monochromatic') {
-    return selectAnalogousDyes(
+    return selectMonochromaticDyes(
       primaryDye, allDyes, {diversifyByLightness: true}
     ).map(c => c.dye) as [Dye, Dye];
   }
