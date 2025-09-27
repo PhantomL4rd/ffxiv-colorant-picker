@@ -1,5 +1,11 @@
 import { writable, get } from 'svelte/store';
-import type { CustomColor, CustomColorsData, StoredCustomColor, RGBColor, HSVColor } from '$lib/types';
+import type {
+  CustomColor,
+  CustomColorsData,
+  StoredCustomColor,
+  RGBColor,
+  HSVColor,
+} from '$lib/types';
 import { rgbToHsv, hydrateCustomColor, extractStoredCustomColor } from '$lib/utils/colorConversion';
 
 const STORAGE_KEY = 'ffxiv-colorant-picker:custom-colors';
@@ -50,7 +56,7 @@ export function loadCustomColors(): void {
 function saveToStorage(colors: CustomColor[]): void {
   try {
     // 新形式（軽量）で保存
-    const storedColors: StoredCustomColor[] = colors.map(color => 
+    const storedColors: StoredCustomColor[] = colors.map((color) =>
       extractStoredCustomColor(color)
     );
 

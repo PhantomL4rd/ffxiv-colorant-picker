@@ -1,11 +1,11 @@
-import type { 
-  HSVColor, 
+import type {
+  HSVColor,
   RGBColor,
   OklabColor,
-  Dye, 
-  CustomColor, 
-  StoredDye, 
-  StoredCustomColor
+  Dye,
+  CustomColor,
+  StoredDye,
+  StoredCustomColor,
 } from '$lib/types';
 
 // HSVからRGBに変換
@@ -98,7 +98,7 @@ export function hydrateDye(stored: StoredDye | Dye): Dye {
     ...stored,
     hsv: rgbToHsv(stored.rgb),
     hex: rgbToHex(stored.rgb),
-    oklab: rgbToOklab(stored.rgb)
+    oklab: rgbToOklab(stored.rgb),
   };
 }
 
@@ -108,7 +108,7 @@ export function hydrateDye(stored: StoredDye | Dye): Dye {
 export function hydrateCustomColor(stored: StoredCustomColor | CustomColor): CustomColor {
   return {
     ...stored,
-    hsv: rgbToHsv(stored.rgb)
+    hsv: rgbToHsv(stored.rgb),
   };
 }
 
@@ -143,7 +143,7 @@ export function hexToRgb(hex: string): RGBColor {
 
 /**
  * Converts an RGB color to Oklab space.
- * 
+ *
  * @param rgb a color in RGB space
  * @returns a color in Oklab space
  */
@@ -165,22 +165,22 @@ export function rgbToOklab(rgb: RGBColor): OklabColor {
   const s_ = Math.cbrt(s);
 
   return {
-    L: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
-    a: 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
-    b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
+    L: 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_,
+    a: 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_,
+    b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_,
   };
 }
 
 /**
  * Converts an Oklab color to RGB space.
- * 
+ *
  * @param oklab a color in Oklab space
  * @returns a color in RGB space
  */
 export function oklabToRgb(oklab: OklabColor): RGBColor {
   const l_ = oklab.L + 0.3963377774 * oklab.a + 0.2158037573 * oklab.b;
   const m_ = oklab.L - 0.1055613458 * oklab.a - 0.0638541728 * oklab.b;
-  const s_ = oklab.L - 0.0894841775 * oklab.a - 1.2914855480 * oklab.b;
+  const s_ = oklab.L - 0.0894841775 * oklab.a - 1.291485548 * oklab.b;
 
   const l = l_ * l_ * l_;
   const m = m_ * m_ * m_;
@@ -188,7 +188,7 @@ export function oklabToRgb(oklab: OklabColor): RGBColor {
 
   const r = l * +4.0767416621 + m * -3.3077115913 + s * +0.2309699292;
   const g = l * -1.2684380046 + m * +2.6097574011 + s * -0.3413193965;
-  const b = l * -0.0041960863 + m * -0.7034186147 + s * +1.7076147010;
+  const b = l * -0.0041960863 + m * -0.7034186147 + s * +1.707614701;
 
   const toSRGB = (c: number) => {
     const cs = Math.max(0, Math.min(1, c));
@@ -210,7 +210,7 @@ export function clipOklabColor(oklab: OklabColor): OklabColor {
   const clippedRgb = {
     r: Math.round(Math.max(0, Math.min(255, rgb.r))),
     g: Math.round(Math.max(0, Math.min(255, rgb.g))),
-    b: Math.round(Math.max(0, Math.min(255, rgb.b)))
+    b: Math.round(Math.max(0, Math.min(255, rgb.b))),
   };
   return rgbToOklab(clippedRgb);
 }
@@ -230,4 +230,3 @@ export function deltaEOklab(c1: OklabColor, c2: OklabColor): number {
   // Euclidean distance in Oklab space
   return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB);
 }
-

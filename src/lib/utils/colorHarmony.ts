@@ -79,9 +79,10 @@ export function findNearestDyes(targetHues: number[], dyes: Dye[], excludeDye?: 
 export function findNearestDyesInOklab(targets: RGBColor[], palette: Dye[]): DyeCandidate[] {
   const candidatesByTarget = targets.map((target) => {
     const targetOklab = rgbToOklab(target);
-    const candidates: DyeCandidate[] = palette.map((dye) => (
-      { dye, delta: deltaEOklab(targetOklab, rgbToOklab(dye.rgb)) }
-    ));
+    const candidates: DyeCandidate[] = palette.map((dye) => ({
+      dye,
+      delta: deltaEOklab(targetOklab, rgbToOklab(dye.rgb)),
+    }));
     return candidates.sort((a, b) => a.delta - b.delta);
   });
 
@@ -109,32 +110,32 @@ export function generateSuggestedDyes(
   if (pattern === 'vivid' || pattern === 'muted') {
     const baseHex = rgbToHex(primaryDye.rgb);
     let targetColors: string[];
-    
+
     if (pattern === 'vivid') {
       targetColors = generateVividHarmony(baseHex, seed);
     } else {
       targetColors = generateMutedHarmony(baseHex, seed);
     }
-    
+
     // targetColors[0]はbaseHexと同じなので、[1]と[2]を使用
     const bridgeHex = targetColors[1];
     const adventureHex = targetColors[2];
-    
+
     // HEXからRGBに変換してnearest dyeを検索
     const bridgeRgb = hexToRgb(bridgeHex);
     const adventureRgb = hexToRgb(adventureHex);
-    
+
     // より多様性を保つため、個別に最適な色を検索
     const availableDyes = allDyes.filter((dye) => dye.id !== primaryDye.id);
-    
+
     const bridgeMatches = findNearestDyesInOklab([bridgeRgb], availableDyes);
     const bridgeDye = bridgeMatches.length > 0 ? bridgeMatches[0].dye : availableDyes[0];
-    
+
     // Adventure色の検索時は、すでに選ばれたbridge色を除外
-    const remainingDyes = availableDyes.filter(dye => dye.id !== bridgeDye.id);
+    const remainingDyes = availableDyes.filter((dye) => dye.id !== bridgeDye.id);
     const adventureMatches = findNearestDyesInOklab([adventureRgb], remainingDyes);
     const adventureDye = adventureMatches.length > 0 ? adventureMatches[0].dye : remainingDyes[0];
-    
+
     return [bridgeDye, adventureDye];
   }
 
@@ -164,9 +165,10 @@ export function generateSuggestedDyes(
       targetHues = calculateTriadic(primaryDye.hsv.h);
   }
 
-  const targets = targetHues.map((h) => (hsvToRgb({ ...primaryDye.hsv, h })));
+  const targets = targetHues.map((h) => hsvToRgb({ ...primaryDye.hsv, h }));
   const nearestDyes = findNearestDyesInOklab(
-    targets, allDyes.filter((dye) => dye.id !== primaryDye.id)
+    targets,
+    allDyes.filter((dye) => dye.id !== primaryDye.id)
   ).map((c) => c.dye);
 
   // 2色に満たない場合はランダムで補完
@@ -179,4 +181,3 @@ export function generateSuggestedDyes(
 
   return [nearestDyes[0], nearestDyes[1]];
 }
-

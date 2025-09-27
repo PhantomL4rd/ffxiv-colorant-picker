@@ -23,19 +23,22 @@ function isValidRgbValue(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 255;
 }
 
-
 function isValidString(value: unknown, maxLength: number): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= maxLength;
 }
 
 function isValidRgbObject(rgb: unknown): rgb is { r: number; g: number; b: number } {
   return (
-    typeof rgb === 'object' && rgb !== null &&
-    'r' in rgb && 'g' in rgb && 'b' in rgb &&
-    isValidRgbValue(rgb.r) && isValidRgbValue(rgb.g) && isValidRgbValue(rgb.b)
+    typeof rgb === 'object' &&
+    rgb !== null &&
+    'r' in rgb &&
+    'g' in rgb &&
+    'b' in rgb &&
+    isValidRgbValue(rgb.r) &&
+    isValidRgbValue(rgb.g) &&
+    isValidRgbValue(rgb.b)
   );
 }
-
 
 interface SharePaletteData {
   p: string; // primary dye id
@@ -218,8 +221,10 @@ export function decodeCustomPaletteFromUrl(url: string): ExtendedSharePaletteDat
       typeof data.p !== 'object' ||
       !('type' in data.p) ||
       data.p.type !== 'custom' ||
-      !('name' in data.p) || !isValidString(data.p.name, MAX_NAME_LENGTH) ||
-      !('rgb' in data.p) || !isValidRgbObject(data.p.rgb) ||
+      !('name' in data.p) ||
+      !isValidString(data.p.name, MAX_NAME_LENGTH) ||
+      !('rgb' in data.p) ||
+      !isValidRgbObject(data.p.rgb) ||
       !Array.isArray(data.s) ||
       data.s.length !== 2 ||
       !isValidString(data.s[0], 100) ||

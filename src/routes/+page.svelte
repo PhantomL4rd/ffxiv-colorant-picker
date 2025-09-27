@@ -2,11 +2,7 @@
 import { onMount } from 'svelte';
 import type { Dye, HarmonyPattern } from '$lib/types';
 import { loadDyes, dyeStore } from '$lib/stores/dyes';
-import {
-  selectionStore,
-  selectPrimaryDye,
-  updatePattern,
-} from '$lib/stores/selection';
+import { selectionStore, selectPrimaryDye, updatePattern } from '$lib/stores/selection';
 import {
   filterStore,
   filteredDyes,
@@ -61,14 +57,14 @@ onMount(async () => {
 
 function handleDyeSelect(dye: Dye) {
   selectPrimaryDye(dye);
-  
+
   // カラーが選択されたらプレビューまでスクロール
   setTimeout(() => {
     if (previewElement) {
-      previewElement.scrollIntoView({ 
-        behavior: 'smooth', 
+      previewElement.scrollIntoView({
+        behavior: 'smooth',
         block: 'start',
-        inline: 'nearest' 
+        inline: 'nearest',
       });
     }
   }, 100); // 少し遅延させてDOMの更新を待つ

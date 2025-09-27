@@ -69,8 +69,8 @@ export function loadFavorites(): void {
         primaryDye: hydrateDye(favorite.primaryDye),
         suggestedDyes: [
           hydrateDye(favorite.suggestedDyes[0]),
-          hydrateDye(favorite.suggestedDyes[1])
-        ] as [Dye, Dye]
+          hydrateDye(favorite.suggestedDyes[1]),
+        ] as [Dye, Dye],
       }));
 
     favoritesStore.set(validFavorites);
@@ -84,13 +84,13 @@ export function loadFavorites(): void {
 function saveFavoritesToStorage(favorites: Favorite[]): void {
   try {
     // 新形式（軽量）で保存
-    const storedFavorites: StoredFavorite[] = favorites.map(favorite => ({
+    const storedFavorites: StoredFavorite[] = favorites.map((favorite) => ({
       ...favorite,
       primaryDye: extractStoredDye(favorite.primaryDye),
       suggestedDyes: [
         extractStoredDye(favorite.suggestedDyes[0]),
-        extractStoredDye(favorite.suggestedDyes[1])
-      ]
+        extractStoredDye(favorite.suggestedDyes[1]),
+      ],
     }));
 
     const data = {

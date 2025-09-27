@@ -1,9 +1,16 @@
 import type { OklabColor } from '$lib/types';
-import { hexToRgb, rgbToOklab, oklabToRgb, rgbToHex, clipOklabColor } from './colorConversion';
+import {
+  hexToRgb,
+  rgbToOklab,
+  oklabToRgb,
+  rgbToHex,
+  clipOklabColor,
+  deltaEOklab,
+} from './colorConversion';
 
 // Vivid/Mutedパラメータ
 export const VIVID_MUTED_PARAMS = {
-  hueOffsetRange: [0, 360] as const,  // 全色相をカバー（赤系も含む）
+  hueOffsetRange: [0, 360] as const, // 全色相をカバー（赤系も含む）
   vividDeltaC: 0.12,
   mutedDeltaC: 0.12,
   bridgeT: 0.5,
@@ -13,7 +20,7 @@ export const VIVID_MUTED_PARAMS = {
   adaptiveThreshold: {
     lowChroma: 0.08,
     highChroma: 0.25,
-  }
+  },
 };
 // オプション用の型定義
 export interface VividMutedOptions {
@@ -38,20 +45,21 @@ function normalizeHue(hue: number): number {
 // 補色を優遇した色相オフセット生成
 function generateComplementaryBiasedHue(random: () => number): number {
   const r = random();
-  
+
   // 30%の確率で補色（180°付近）を生成
   if (r < 0.3) {
     // 150°-210°の範囲（補色±30°）
     return 150 + random() * 60;
   }
-  
+
   // 20%の確率でトライアド（120°, 240°付近）を生成
   if (r < 0.5) {
-    return random() < 0.5 ? 
-      (100 + random() * 40) :  // 100°-140° (120°±20°)
-      (220 + random() * 40);   // 220°-260° (240°±20°)
+    return random() < 0.5
+      ? 100 + random() * 40
+      : // 100°-140° (120°±20°)
+        220 + random() * 40; // 220°-260° (240°±20°)
   }
-  
+
   // 残り50%で全色相からランダム
   return random() * 360;
 }
@@ -59,20 +67,21 @@ function generateComplementaryBiasedHue(random: () => number): number {
 // Muted用：近似色を優遇した色相オフセット生成
 function generateAnalogousBiasedHue(random: () => number): number {
   const r = random();
-  
+
   // 25%の確率で近似色（±30°以内）を生成
   if (r < 0.25) {
     // -30°〜+30°の範囲（類似色）
     return -30 + random() * 60;
   }
-  
+
   // 25%の確率で中程度の距離（60°-120°付近）
   if (r < 0.5) {
-    return random() < 0.5 ? 
-      (60 + random() * 60) :   // 60°-120°
-      (-120 + random() * 60);  // -120°〜-60°
+    return random() < 0.5
+      ? 60 + random() * 60
+      : // 60°-120°
+        -120 + random() * 60; // -120°〜-60°
   }
-  
+
   // 残り50%で全色相からランダム（実用性重視）
   return random() * 360;
 }
@@ -87,11 +96,11 @@ function rotateHue(oklab: OklabColor, angleDegrees: number): OklabColor {
   const angle = (angleDegrees * Math.PI) / 180;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
-  
+
   // a, b座標を回転
   const newA = oklab.a * cos - oklab.b * sin;
   const newB = oklab.a * sin + oklab.b * cos;
-  
+
   return {
     L: oklab.L,
     a: newA,
@@ -132,7 +141,6 @@ function getContrastRatio(color1: string, color2: string): number {
   return (brighter + 0.05) / (darker + 0.05);
 }
 
-
 // コントラスト微調整
 function nudgeForContrast(hex: string, bgHex: string, minContrast: number): string {
   let currentColor = hex;
@@ -143,7 +151,7 @@ function nudgeForContrast(hex: string, bgHex: string, minContrast: number): stri
   while (getContrastRatio(currentColor, bgHex) < minContrast && tries < maxTries) {
     const rgb = hexToRgb(currentColor);
     let oklab = rgbToOklab(rgb);
-    
+
     // 背景との関係で明度を調整
     const bgLum = getLuminance(hexToRgb(bgHex));
     if (bgLum > 0.5) {
@@ -153,31 +161,31 @@ function nudgeForContrast(hex: string, bgHex: string, minContrast: number): stri
       // 暗い背景：色を明るくする
       oklab.L = clamp(oklab.L + adjustStep, 0, 1);
     }
-    
+
     // クリップして変換
     const clippedOklab = clipOklabColor(oklab);
     const adjustedRgb = oklabToRgb(clippedOklab);
     currentColor = rgbToHex(adjustedRgb);
     tries++;
   }
-  
+
   return currentColor;
 }
 
 // 色相範囲の強制
 function enforceHueRange(
-  offset: number, 
-  range: readonly [number, number], 
+  offset: number,
+  range: readonly [number, number],
   random: () => number
 ): number {
   const normalizedOffset = normalizeHue(offset);
   const [min, max] = range;
-  
+
   // 範囲チェック
   if (normalizedOffset >= min && normalizedOffset <= max) {
     return normalizedOffset;
   }
-  
+
   // 範囲外の場合、再抽選を試行
   for (let i = 0; i < 8; i++) {
     const newOffset = normalizeHue(random() * 360);
@@ -185,14 +193,14 @@ function enforceHueRange(
       return newOffset;
     }
   }
-  
+
   // 最終的に範囲内にクランプ
   if (normalizedOffset < min) {
     return min;
   } else if (normalizedOffset > max) {
     return max;
   }
-  
+
   return normalizedOffset;
 }
 
@@ -205,81 +213,80 @@ function getAdaptiveAdjustment(
   const { lowChroma, highChroma } = params.adaptiveThreshold;
   const baseChroma = getChroma(base);
   const baseL = base.L;
-  
+
   if (isVivid) {
     // Vividモード：極端なコントラストを生成
     if (baseL > 0.8) {
       // 白系（明るい色）：強烈に暗い色を生成
       return {
         deltaC: 0.25,
-        deltaL: -0.50  // より強烈に暗く（L ≈ 0.30-0.50）
+        deltaL: -0.5, // より強烈に暗く（L ≈ 0.30-0.50）
       };
     } else if (baseL < 0.35) {
       // 黒系（暗い色）：強烈に明るい色を生成
       return {
         deltaC: 0.25,
-        deltaL: 0.50   // より強烈に明るく（L ≈ 0.85-1.0）
+        deltaL: 0.5, // より強烈に明るく（L ≈ 0.85-1.0）
       };
     } else if (baseL > 0.6) {
       // 中程度の明るい色：強烈に暗くする
       return {
         deltaC: 0.22,
-        deltaL: -0.35  // 強烈に暗く
+        deltaL: -0.35, // 強烈に暗く
       };
     } else if (baseL < 0.4) {
       // 中程度の暗い色：強烈に明るくする
       return {
         deltaC: 0.22,
-        deltaL: 0.35   // 強烈に明るく
+        deltaL: 0.35, // 強烈に明るく
       };
     } else if (baseChroma < lowChroma) {
       // 低彩度の色全部：面白い色を生成
       return {
         deltaC: 0.22,
-        deltaL: baseL > 0.5 ? -0.25 : 0.25  // より極端な明度コントラスト
+        deltaL: baseL > 0.5 ? -0.25 : 0.25, // より極端な明度コントラスト
       };
     } else if (baseChroma > highChroma) {
       // 派手な色：彩度を下げてバランスを取る
       return {
         deltaC: -0.05 - (baseChroma - highChroma) * 0.3,
-        deltaL: 0
+        deltaL: 0,
       };
     }
     // 中間的な色：標準的な増加 + 極端な明度コントラスト
     const lightnessFactor = baseL > 0.5 ? -0.25 : 0.25;
     return { deltaC: 0.15, deltaL: lightnessFactor };
-    
   } else {
     // Mutedモード：落ち着いた色でも面白さを追求
     if (baseL > 0.8) {
       // 白系：中程度の明度で落ち着いた彩度を狙う
       return {
-        deltaC: 0.12,  // 控えめだが色味のある彩度
-        deltaL: -0.25  // L ≈ 0.65-0.75 程度に
+        deltaC: 0.12, // 控えめだが色味のある彩度
+        deltaL: -0.25, // L ≈ 0.65-0.75 程度に
       };
     } else if (baseL < 0.35) {
       // 黒系：中程度の明度で落ち着いた彩度を狙う
       return {
-        deltaC: 0.12,  // 控えめだが色味のある彩度
-        deltaL: 0.25   // L ≈ 0.60-0.70 程度に
+        deltaC: 0.12, // 控えめだが色味のある彩度
+        deltaL: 0.25, // L ≈ 0.60-0.70 程度に
       };
     } else if (baseChroma < lowChroma) {
       // 低彩度の色全部：落ち着いた色味を追加
       return {
-        deltaC: 0.10,  // 控えめだが色味のある彩度
-        deltaL: baseL > 0.6 ? -0.15 : 0.15  // 適度な明度コントラスト
+        deltaC: 0.1, // 控えめだが色味のある彩度
+        deltaL: baseL > 0.6 ? -0.15 : 0.15, // 適度な明度コントラスト
       };
     } else if (baseChroma > highChroma) {
       // 高彩度：大幅に彩度を下げる
       return {
         deltaC: -0.15 - (baseChroma - highChroma) * 0.4,
-        deltaL: 0.03  // 少し明るくしてスモーキーに
+        deltaL: 0.03, // 少し明るくしてスモーキーに
       };
     }
     // 中間的な色：バランスよく調整
     return {
       deltaC: -0.08,
-      deltaL: baseL > 0.6 ? 0.04 : -0.04
+      deltaL: baseL > 0.6 ? 0.04 : -0.04,
     };
   }
 }
@@ -293,35 +300,35 @@ function makeAdventure(
 ): OklabColor {
   // 適応的調整を取得
   const { deltaC, deltaL } = getAdaptiveAdjustment(base, isVivid, params);
-  
+
   // 黒系・白系の色（極端な明度・低彩度）の特別処理（Vivid/Muted共通）
   const baseChroma = getChroma(base);
   if (baseChroma < 0.05 && (base.L < 0.2 || base.L > 0.8)) {
     // 黒系・白系の場合：まず目標の明度と彩度を設定してから色相を適用
     const targetL = clamp(base.L + deltaL, 0, 1);
     const targetChroma = clamp(baseChroma + deltaC, 0, 0.37);
-    
+
     // 色相角度をa,b座標に直接変換
     const hueRad = (hueOffset * Math.PI) / 180;
     const newA = targetChroma * Math.cos(hueRad);
     const newB = targetChroma * Math.sin(hueRad);
-    
+
     return {
       L: targetL,
       a: newA,
       b: newB,
     };
   }
-  
+
   // 通常の処理：色相を回転してから調整
   const rotated = rotateHue(base, hueOffset);
-  
+
   // 彩度調整
   const currentChroma = getChroma(rotated);
   const targetChroma = clamp(currentChroma + deltaC, 0, 0.37);
   const chromaFactor = currentChroma > 0 ? targetChroma / currentChroma : 1;
   const chromaAdjusted = adjustChroma(rotated, chromaFactor);
-  
+
   // 明度調整
   return {
     L: clamp(chromaAdjusted.L + deltaL, 0, 1),
@@ -337,21 +344,86 @@ function makeBridge(
   random: () => number,
   params = VIVID_MUTED_PARAMS
 ): OklabColor {
-  const t = clamp(
-    params.bridgeT + (random() - 0.5) * params.bridgeJitter * 2,
-    0.25,
-    0.75
-  );
-  
+  const t = clamp(params.bridgeT + (random() - 0.5) * params.bridgeJitter * 2, 0.25, 0.75);
+
   const interpolated = {
     L: base.L + (adventure.L - base.L) * t,
     a: base.a + (adventure.a - base.a) * t,
     b: base.b + (adventure.b - base.b) * t,
   };
-  
+
   // Bridge色は少し彩度を落として"つなぎ"に寄せる
   const bridgeChromaFactor = 0.9;
   return adjustChroma(interpolated, bridgeChromaFactor);
+}
+
+/**
+ * BaseとAdventureから最も離れた色（min(ΔE(X,A), ΔE(X,B))が最大）を探す
+ * Mutedモードらしく低彩度・落ち着いた明度に寄せる
+ */
+function findMaxMinDistanceColor(
+  base: OklabColor,
+  adventure: OklabColor,
+  random: () => number
+): OklabColor {
+  // 探索する候補を生成
+  const candidates: OklabColor[] = [];
+
+  // 色相を360度探索（30度刻み）
+  for (let hueOffset = 0; hueOffset < 360; hueOffset += 30) {
+    // 明度を3段階（暗め、中間、明るめ）
+    for (const lightnessFactor of [0.4, 0.6, 0.8]) {
+      // 彩度を低めに（Mutedらしく）
+      for (const chromaFactor of [0.3, 0.5, 0.7]) {
+        const hueRad = (hueOffset * Math.PI) / 180;
+
+        // Muted向けの控えめな彩度
+        const targetChroma = 0.15 * chromaFactor;
+
+        const candidate: OklabColor = {
+          L: 0.3 + lightnessFactor * 0.4, // 0.3〜0.7の範囲
+          a: targetChroma * Math.cos(hueRad),
+          b: targetChroma * Math.sin(hueRad),
+        };
+
+        candidates.push(candidate);
+      }
+    }
+  }
+
+  // ランダムな候補も追加（多様性のため）
+  for (let i = 0; i < 20; i++) {
+    const hueRad = random() * 2 * Math.PI;
+    const chromaFactor = 0.2 + random() * 0.5; // 0.2〜0.7
+    const targetChroma = 0.15 * chromaFactor;
+
+    const candidate: OklabColor = {
+      L: 0.35 + random() * 0.35, // 0.35〜0.7の範囲（Muted向け）
+      a: targetChroma * Math.cos(hueRad),
+      b: targetChroma * Math.sin(hueRad),
+    };
+
+    candidates.push(candidate);
+  }
+
+  // 各候補について min(ΔE(X,base), ΔE(X,adventure)) を計算
+  let bestCandidate = candidates[0];
+  let bestScore = 0;
+
+  for (const candidate of candidates) {
+    const distToBase = deltaEOklab(candidate, base);
+    const distToAdventure = deltaEOklab(candidate, adventure);
+    const minDist = Math.min(distToBase, distToAdventure);
+
+    if (minDist > bestScore) {
+      bestScore = minDist;
+      bestCandidate = candidate;
+    }
+  }
+
+  // 最終的な彩度調整（Mutedらしく控えめに）
+  const finalChromaFactor = 0.85;
+  return adjustChroma(bestCandidate, finalChromaFactor);
 }
 
 // Vivid配色生成
@@ -363,40 +435,40 @@ export function generateVividHarmony(
   const random = seed ? seededRandom(seed) : () => Math.random();
   const bgHex = options?.backgroundHex || '#ffffff';
   const hueRange = options?.hueOffsetRange || VIVID_MUTED_PARAMS.hueOffsetRange;
-  
+
   // Base色をOklabに変換
   const baseRgb = hexToRgb(baseHex);
   const baseOklab = rgbToOklab(baseRgb);
-  
+
   // 補色を優遇した色相オフセットを生成
   let hueOffset = generateComplementaryBiasedHue(random);
-  
+
   // hueOffsetRangeを適用
   if (hueRange[0] !== 0 || hueRange[1] !== 360) {
     hueOffset = enforceHueRange(hueOffset, hueRange, random);
   }
-  
+
   // Adventure色を生成（Vivid）
   let adventureOklab = makeAdventure(baseOklab, true, hueOffset);
-  
+
   // Bridge色を生成
   let bridgeOklab = makeBridge(baseOklab, adventureOklab, random);
-  
+
   // sRGBクリップ
   adventureOklab = clipOklabColor(adventureOklab);
   bridgeOklab = clipOklabColor(bridgeOklab);
-  
+
   // RGB変換してHEX化
   const adventureRgb = oklabToRgb(adventureOklab);
   const bridgeRgb = oklabToRgb(bridgeOklab);
-  
+
   let bridgeHex = rgbToHex(bridgeRgb);
   let adventureHex = rgbToHex(adventureRgb);
-  
+
   // コントラスト調整
   bridgeHex = nudgeForContrast(bridgeHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
   adventureHex = nudgeForContrast(adventureHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
-  
+
   return [baseHex, bridgeHex, adventureHex];
 }
 
@@ -409,39 +481,39 @@ export function generateMutedHarmony(
   const random = seed ? seededRandom(seed) : () => Math.random();
   const bgHex = options?.backgroundHex || '#ffffff';
   const hueRange = options?.hueOffsetRange || VIVID_MUTED_PARAMS.hueOffsetRange;
-  
+
   // Base色をOklabに変換
   const baseRgb = hexToRgb(baseHex);
   const baseOklab = rgbToOklab(baseRgb);
-  
+
   // 近似色を優遇した色相オフセットを生成
   let hueOffset = generateAnalogousBiasedHue(random);
-  
+
   // hueOffsetRangeを適用
   if (hueRange[0] !== 0 || hueRange[1] !== 360) {
     hueOffset = enforceHueRange(hueOffset, hueRange, random);
   }
-  
+
   // Adventure色を生成（Muted）
   let adventureOklab = makeAdventure(baseOklab, false, hueOffset);
-  
-  // Bridge色を生成
-  let bridgeOklab = makeBridge(baseOklab, adventureOklab, random);
-  
+
+  // 新アルゴリズム: BaseとAdventureから最も離れた色を探す
+  let bridgeOklab = findMaxMinDistanceColor(baseOklab, adventureOklab, random);
+
   // sRGBクリップ
   adventureOklab = clipOklabColor(adventureOklab);
   bridgeOklab = clipOklabColor(bridgeOklab);
-  
+
   // RGB変換してHEX化
   const adventureRgb = oklabToRgb(adventureOklab);
   const bridgeRgb = oklabToRgb(bridgeOklab);
-  
+
   let bridgeHex = rgbToHex(bridgeRgb);
   let adventureHex = rgbToHex(adventureRgb);
-  
+
   // コントラスト調整
   bridgeHex = nudgeForContrast(bridgeHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
   adventureHex = nudgeForContrast(adventureHex, bgHex, VIVID_MUTED_PARAMS.minContrastOnBg);
-  
+
   return [baseHex, bridgeHex, adventureHex];
 }

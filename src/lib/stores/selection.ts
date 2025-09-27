@@ -80,7 +80,7 @@ export function updatePattern(pattern: HarmonyPattern): void {
 
       // 新しいシード値を生成（配色パターン変更時も異なる組み合わせ）
       newSeed = Date.now();
-      
+
       suggested =
         dyesForSuggestion.length > 0
           ? generateSuggestedDyes(state.primaryDye, pattern, dyesForSuggestion, newSeed)
