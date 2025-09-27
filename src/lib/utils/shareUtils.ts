@@ -17,6 +17,7 @@ import { rgbToOklab } from './colorConversion';
 const MAX_QUERY_LENGTH = 2048; // URLクエリパラメータの最大長
 const MAX_JSON_LENGTH = 10000; // 解凍後JSONの最大長
 const MAX_NAME_LENGTH = 50; // カスタムカラー名の最大長
+const BASE_URL_FOR_SHARE = 'https://ffxiv-colorant-picker.vercel.app/share'
 
 // 検証ヘルパー関数
 function isValidRgbValue(value: unknown): value is number {
@@ -54,9 +55,7 @@ export function generateShareUrl(favorite: Favorite): string {
   const isCustom = favorite.primaryDye.tags?.includes('custom');
 
   // ベースURLを取得（favoritesパスを除外）
-  const currentUrl = new URL(window.location.href);
-  // パス名からfavoritesを削除してルートパスに設定
-  currentUrl.pathname = currentUrl.pathname.replace(/\/favorites\/?$/, '/');
+  const shareUrl = new URL(BASE_URL_FOR_SHARE);
 
   if (isCustom) {
     // カスタムカラーの場合は拡張データ形式で保存（rgb のみ）
@@ -76,8 +75,8 @@ export function generateShareUrl(favorite: Favorite): string {
     try {
       const jsonString = JSON.stringify(extendedData);
       const compressedData = LZString.compressToEncodedURIComponent(jsonString);
-      currentUrl.searchParams.set('custom-palette', compressedData);
-      return currentUrl.toString();
+      shareUrl.searchParams.set('custom-palette', compressedData);
+      return shareUrl.toString();
     } catch (error) {
       console.error('Failed to generate custom share URL:', error);
       return window.location.href;
@@ -93,8 +92,8 @@ export function generateShareUrl(favorite: Favorite): string {
     try {
       const jsonString = JSON.stringify(data);
       const compressedData = LZString.compressToEncodedURIComponent(jsonString);
-      currentUrl.searchParams.set('palette', compressedData);
-      return currentUrl.toString();
+      shareUrl.searchParams.set('palette', compressedData);
+      return shareUrl.toString();
     } catch (error) {
       console.error('Failed to generate share URL:', error);
       return window.location.href;
