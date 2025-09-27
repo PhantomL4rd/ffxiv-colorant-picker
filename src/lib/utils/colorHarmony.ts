@@ -1,5 +1,6 @@
 import type { Dye, DyeCandidate, HarmonyPattern, RGBColor } from '$lib/types';
 import { deltaEOklab, hsvToRgb, rgbToOklab, rgbToHex, hexToRgb } from './colorConversion';
+import { selectAnalogousDyes } from './selector/analogous';
 import { generateVividHarmony, generateMutedHarmony } from './vividMuted';
 
 // トライアド（三色配色）- 色相環で120度ずつ離れた色
@@ -19,6 +20,7 @@ export function calculateAnalogous(baseHue: number): [number, number] {
 }
 
 // モノクロマティック - 同一色相で明度・彩度を変える
+// TODO: replaced with analogousSelector
 export function calculateMonochromatic(baseDye: Dye): [number, number] {
   // 同じ色相で異なる明度・彩度の色を探す
   return [baseDye.hsv.h, baseDye.hsv.h];
@@ -106,6 +108,12 @@ export function generateSuggestedDyes(
   allDyes: Dye[],
   seed?: number
 ): [Dye, Dye] {
+  if (pattern === 'monochromatic') {
+    return selectAnalogousDyes(
+      primaryDye, allDyes, {diversifyByLightness: true}
+    ).map(c => c.dye) as [Dye, Dye];
+  }
+
   // Vivid/Mutedの場合は専用ロジックを使用
   if (pattern === 'vivid' || pattern === 'muted') {
     const baseHex = rgbToHex(primaryDye.rgb);
@@ -151,9 +159,6 @@ export function generateSuggestedDyes(
       break;
     case 'analogous':
       targetHues = calculateAnalogous(primaryDye.hsv.h);
-      break;
-    case 'monochromatic':
-      targetHues = calculateMonochromatic(primaryDye);
       break;
     case 'similar':
       targetHues = calculateSimilar(primaryDye.hsv.h);

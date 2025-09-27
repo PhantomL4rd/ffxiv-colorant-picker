@@ -6,7 +6,8 @@ import type {
   CustomColor,
   StoredDye,
   StoredCustomColor,
-} from '$lib/types';
+  OklchColor,
+} from "$lib/types";
 
 // HSVからRGBに変換
 export function hsvToRgb(hsv: HSVColor): RGBColor {
@@ -86,7 +87,7 @@ export function rgbToHsv(rgb: RGBColor): HSVColor {
 
 // RGBからHEXに変換
 export function rgbToHex(rgb: RGBColor): string {
-  const toHex = (n: number) => n.toString(16).padStart(2, '0').toUpperCase();
+  const toHex = (n: number) => n.toString(16).padStart(2, "0").toUpperCase();
   return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`;
 }
 
@@ -105,7 +106,9 @@ export function hydrateDye(stored: StoredDye | Dye): Dye {
 /**
  * StoredCustomColorをCustomColorにハイドレート
  */
-export function hydrateCustomColor(stored: StoredCustomColor | CustomColor): CustomColor {
+export function hydrateCustomColor(
+  stored: StoredCustomColor | CustomColor
+): CustomColor {
   return {
     ...stored,
     hsv: rgbToHsv(stored.rgb),
@@ -123,7 +126,9 @@ export function extractStoredDye(dye: Dye): StoredDye {
 /**
  * CustomColorからStoredCustomColorを抽出（保存用）
  */
-export function extractStoredCustomColor(color: CustomColor): StoredCustomColor {
+export function extractStoredCustomColor(
+  color: CustomColor
+): StoredCustomColor {
   const { hsv, ...stored } = color;
   return stored;
 }
@@ -204,6 +209,51 @@ export function oklabToRgb(oklab: OklabColor): RGBColor {
   };
 }
 
+/**
+ * Converts an Oklab color to Oklch color space.
+ *
+ * @param lab
+ * @returns
+ */
+export function oklabToOklch(lab: OklabColor): OklchColor {
+  const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+  let h = (Math.atan2(lab.b, lab.a) * 180) / Math.PI;
+  if (h < 0) h += 360;
+  return { L: lab.L, C, h };
+}
+
+/**
+ * Converts an Oklch color to Oklab color space.
+ *
+ * @param lch
+ * @returns
+ */
+export function oklchToOklab(lch: OklchColor): OklabColor {
+  const a = lch.C * Math.cos((lch.h * Math.PI) / 180);
+  const b = lch.C * Math.sin((lch.h * Math.PI) / 180);
+  return { L: lch.L, a, b };
+}
+
+/**
+ * Converts an RGB color to Oklch color space.
+ *
+ * @param rgb a color in RGB space
+ * @returns a color in Oklch space
+ */
+export function rgbToOklch(rgb: RGBColor): OklchColor {
+  return oklabToOklch(rgbToOklab(rgb));
+}
+
+/**
+ * Converts an Oklch color to RGB color space.
+ *
+ * @param lch 
+ * @returns 
+ */
+export function oklchToRgb(lch: OklchColor): RGBColor {
+  return oklabToRgb(oklchToOklab(lch));
+}
+
 // sRGBクリップ処理（色相を保持）
 export function clipOklabColor(oklab: OklabColor): OklabColor {
   const rgb = oklabToRgb(oklab);
@@ -229,4 +279,16 @@ export function deltaEOklab(c1: OklabColor, c2: OklabColor): number {
 
   // Euclidean distance in Oklab space
   return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB);
+}
+
+/**
+ * Calculates the angular difference between two hues.
+ * 
+ * @param h1 the first hue
+ * @param h2 the second hue
+ * @returns the angular difference between the two hues
+ */
+export function hueDiff(h1: number, h2: number): number {
+  const diff = Math.abs(h1 - h2) % 360;
+  return diff > 180 ? 360 - diff : diff;
 }
