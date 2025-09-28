@@ -146,6 +146,13 @@ export function hexToRgb(hex: string): RGBColor {
   };
 }
 
+// Hue差分計算（度数単位）
+export function hueDelta(h1: number, h2: number): number {
+  let d = Math.abs(h1 - h2);
+  if (d > 180) d = 360 - d;
+  return d; // [0, 180]
+}
+
 /**
  * Converts an RGB color to Oklab space.
  *
