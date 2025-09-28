@@ -104,6 +104,11 @@ export const VIVID_MUTED_PARAMS = {
       balance: { chroma: -0.08, lightness: 0.04 },
       // 高彩度削減（派手な色を落ち着かせる）
       highChromaReduction: { base: -0.15, factor: 0.4 },
+      // 黒系特別調整（より控えめな色変化）
+      darkReduction: {
+        chromaFactor: 0.5,    // 彩度変化を50%に抑制（さらに控えめに）
+        lightnessFactor: 0.7, // 明度変化を70%に抑制
+      },
     },
   },
 };
@@ -360,10 +365,10 @@ function getAdaptiveAdjustment(
         deltaL: -deltaValues.muted.standard.lightness, // 適度に暗く
       };
     } else if (baseL < lightness.veryLow) {
-      // 黒系：中程度の明度で落ち着いた彩度を狙う
+      // 黒系：中程度の明度で落ち着いた彩度を狙う（より控えめに調整）
       return {
-        deltaC: deltaValues.muted.standard.chroma, // 控えめだが色味のある彩度
-        deltaL: deltaValues.muted.standard.lightness, // 適度に明るく
+        deltaC: deltaValues.muted.low.chroma * deltaValues.muted.darkReduction.chromaFactor, // 黒系はさらに控えめな彩度
+        deltaL: deltaValues.muted.standard.lightness * deltaValues.muted.darkReduction.lightnessFactor, // 明度変化も少し抑える
       };
     } else if (baseChroma < lowChroma) {
       // 低彩度の色全部：落ち着いた色味を追加
