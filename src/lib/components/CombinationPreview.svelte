@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Dye, HarmonyPattern } from '$lib/types';
 import { selectPrimaryDye, regenerateSuggestions } from '$lib/stores/selection';
-import { RefreshCw } from 'lucide-svelte';
+import { RefreshCw, BookOpenText } from 'lucide-svelte';
 
 interface Props {
   selectedDye: Dye | null;
@@ -35,7 +35,21 @@ const isRandomMode = $derived(pattern === 'vivid' || pattern === 'muted');
               class="w-full h-20 rounded-lg border-2 border-base-300 mb-2"
               style="background-color: {selectedDye.hex};"
             ></div>
-            <h4 class="font-medium text-sm">{selectedDye.name}</h4>
+            <h4 class="font-medium text-sm flex items-center justify-center gap-1">
+              {#if selectedDye.lodestone}
+                <a 
+                  href={selectedDye.lodestone} 
+                  class="hover:text-primary transition-colors flex items-center gap-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <BookOpenText class="w-3 h-3" />
+                  {selectedDye.name}
+                </a>
+              {:else}
+                {selectedDye.name}
+              {/if}
+            </h4>
           </div>
           
           <!-- 提案カララント1 -->
@@ -47,7 +61,21 @@ const isRandomMode = $derived(pattern === 'vivid' || pattern === 'muted');
               onclick={() => handleSuggestedDyeClick(suggestedDyes[0])}
               title="この色を選択して新しい組み合わせを提案"
             ></button>
-            <h4 class="font-medium text-sm">{suggestedDyes[0].name}</h4>
+            <h4 class="font-medium text-sm flex items-center justify-center gap-1">
+              {#if suggestedDyes[0].lodestone}
+                <a 
+                  href={suggestedDyes[0].lodestone} 
+                  class="hover:text-primary transition-colors flex items-center gap-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <BookOpenText class="w-3 h-3" />
+                  {suggestedDyes[0].name}
+                </a>
+              {:else}
+                {suggestedDyes[0].name}
+              {/if}
+            </h4>
           </div>
           
           <!-- 提案カララント2 -->
@@ -59,9 +87,38 @@ const isRandomMode = $derived(pattern === 'vivid' || pattern === 'muted');
               onclick={() => handleSuggestedDyeClick(suggestedDyes[1])}
               title="この色を選択して新しい組み合わせを提案"
             ></button>
-            <h4 class="font-medium text-sm">{suggestedDyes[1].name}</h4>
+            <h4 class="font-medium text-sm flex items-center justify-center gap-1">
+              {#if suggestedDyes[1].lodestone}
+                <a 
+                  href={suggestedDyes[1].lodestone} 
+                  class="hover:text-primary transition-colors flex items-center gap-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <BookOpenText class="w-3 h-3" />
+                  {suggestedDyes[1].name}
+                </a>
+              {:else}
+                {suggestedDyes[1].name}
+              {/if}
+            </h4>
           </div>
         </div>
+        
+        <!-- 再生成ボタン（Vivid/Mutedモードの場合のみ） -->
+        {#if isRandomMode}
+          <div class="flex justify-center mt-4">
+            <button
+              type="button"
+              class="btn btn-sm btn-ghost gap-2"
+              onclick={handleRegenerate}
+              title="新しい組み合わせを生成"
+            >
+              <RefreshCw class="w-4 h-4" />
+              再生成
+            </button>
+          </div>
+        {/if}
         
       </div>
     {:else}

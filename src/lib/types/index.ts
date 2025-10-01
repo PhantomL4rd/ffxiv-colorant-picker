@@ -8,6 +8,7 @@ export interface Dye {
   hex: string;
   oklab: OklabColor;
   tags?: string[];
+  lodestone?: string;
 }
 
 export type DyeCandidate = {
