@@ -19,16 +19,21 @@ export const selectionStore = writable<{
   harmonySeed: Date.now(),
 });
 
+// 提案生成用の染料リストを取得する共通関数
+function getDyesForSuggestion(): Dye[] {
+  const allDyes = get(dyeStore);
+  const currentFilter = get(filterStore);
+  return currentFilter.excludeMetallic
+    ? allDyes.filter((d) => !d.tags?.includes('metallic'))
+    : allDyes;
+}
+
 // 基本カララント（またはカスタムカラー）を選択
 export function selectPrimaryDye(dye: Dye | ExtendedDye): void {
   selectionStore.update((state) => {
     // 提案生成用のdyesを取得
     // カテゴリフィルターは適用せず、メタリック除外のみ適用
-    const allDyes = get(dyeStore);
-    const currentFilter = get(filterStore);
-    const dyesForSuggestion = currentFilter.excludeMetallic
-      ? allDyes.filter((d) => !d.tags?.includes('metallic'))
-      : allDyes;
+    const dyesForSuggestion = getDyesForSuggestion();
 
     // 新しいシード値を生成（毎回異なる組み合わせ）
     const newSeed = Date.now();
@@ -72,11 +77,7 @@ export function updatePattern(pattern: HarmonyPattern): void {
     if (state.primaryDye) {
       // 提案生成用のdyesを取得
       // カテゴリフィルターは適用せず、メタリック除外のみ適用
-      const allDyes = get(dyeStore);
-      const currentFilter = get(filterStore);
-      const dyesForSuggestion = currentFilter.excludeMetallic
-        ? allDyes.filter((d) => !d.tags?.includes('metallic'))
-        : allDyes;
+      const dyesForSuggestion = getDyesForSuggestion();
 
       // 新しいシード値を生成（配色パターン変更時も異なる組み合わせ）
       newSeed = Date.now();
@@ -103,11 +104,7 @@ export function regenerateSuggestions(): void {
 
     // 提案生成用のdyesを取得
     // カテゴリフィルターは適用せず、メタリック除外のみ適用
-    const allDyes = get(dyeStore);
-    const currentFilter = get(filterStore);
-    const dyesForSuggestion = currentFilter.excludeMetallic
-      ? allDyes.filter((d) => !d.tags?.includes('metallic'))
-      : allDyes;
+    const dyesForSuggestion = getDyesForSuggestion();
 
     // 新しいシード値を生成（Vivid/Mutedモード時のみ効果的）
     const newSeed = Date.now();

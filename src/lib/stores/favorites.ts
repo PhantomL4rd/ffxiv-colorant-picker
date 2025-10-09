@@ -12,6 +12,7 @@ import type {
 import { selectionStore, selectPrimaryDye, updatePattern, setPaletteDirectly } from './selection';
 import { isCustomDye, extractCustomColor } from '$lib/utils/customColorUtils';
 import { hydrateDye, extractStoredDye } from '$lib/utils/colorConversion';
+import { loadFromStorage, saveToStorage } from '$lib/utils/storageService';
 
 // お気に入りストア
 export const favoritesStore = writable<Favorite[]>([]);
@@ -37,13 +38,10 @@ function generateId(): string {
 // LocalStorageからお気に入りを読み込み
 export function loadFavorites(): void {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-      favoritesStore.set([]);
-      return;
-    }
-
-    const data: FavoritesData = JSON.parse(stored);
+    const data: FavoritesData = loadFromStorage<FavoritesData>(STORAGE_KEY, {
+      favorites: [],
+      version: STORAGE_VERSION,
+    });
 
     // データバージョンチェック
     if (data.version !== STORAGE_VERSION) {
@@ -98,7 +96,7 @@ function saveFavoritesToStorage(favorites: Favorite[]): void {
       version: STORAGE_VERSION,
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    saveToStorage(STORAGE_KEY, data);
   } catch (error) {
     if (error instanceof DOMException && error.code === 22) {
       // QuotaExceededError - ストレージ容量不足

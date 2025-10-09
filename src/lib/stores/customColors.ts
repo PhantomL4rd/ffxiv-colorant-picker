@@ -7,6 +7,7 @@ import type {
   HSVColor,
 } from '$lib/types';
 import { rgbToHsv, hydrateCustomColor, extractStoredCustomColor } from '$lib/utils/colorConversion';
+import { loadFromStorage, saveToStorage as saveStorageUtil } from '$lib/utils/storageService';
 
 const STORAGE_KEY = 'ffxiv-colorant-picker:custom-colors';
 const VERSION = '1.0.0';
@@ -25,13 +26,11 @@ export function loadCustomColors(): void {
       return;
     }
 
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-      customColorsStore.set([]);
-      return;
-    }
-
-    const data: CustomColorsData = JSON.parse(stored);
+    const data: CustomColorsData = loadFromStorage<CustomColorsData>(STORAGE_KEY, {
+      colors: [],
+      version: VERSION,
+      lastUpdated: new Date().toISOString(),
+    });
 
     // ハイドレーション + 日付文字列をDateオブジェクトに変換
     const colors = data.colors.map((color) => {
@@ -66,7 +65,7 @@ function saveToStorage(colors: CustomColor[]): void {
       lastUpdated: new Date().toISOString(),
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    saveStorageUtil(STORAGE_KEY, data);
   } catch (error) {
     console.error('Failed to save custom colors:', error);
     throw new Error('カスタムカラーの保存に失敗しました');
