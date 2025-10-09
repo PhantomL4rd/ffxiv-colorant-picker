@@ -9,10 +9,10 @@ import type {
   StoredDye,
   StoredFavorite,
 } from '$lib/types';
-import { selectionStore, selectPrimaryDye, updatePattern, setPaletteDirectly } from './selection';
 import { isCustomDye, extractCustomColor } from '$lib/utils/customColorUtils';
 import { hydrateDye, extractStoredDye } from '$lib/utils/colorConversion';
 import { loadFromStorage, saveToStorage } from '$lib/utils/storageService';
+import { emitRestorePalette } from './paletteEvents';
 
 // お気に入りストア
 export const favoritesStore = writable<Favorite[]>([]);
@@ -231,18 +231,23 @@ export function renameFavorite(favoriteId: string, newName: string): void {
 export function restoreFavorite(favorite: Favorite): void {
   try {
     // カスタムカラーかチェック（tagsにcustomが含まれている場合）
+    let primaryDye: Dye | ExtendedDye;
     if (favorite.primaryDye.tags?.includes('custom')) {
       // カスタムカラーの場合はExtendedDyeとして扱う
-      const extendedDye: ExtendedDye = {
+      primaryDye = {
         ...favorite.primaryDye,
         source: 'custom',
-      };
-      // 直接パレットを設定（カスタムカラーの場合は提案色も保存されている）
-      setPaletteDirectly(extendedDye, favorite.suggestedDyes, favorite.pattern);
+      } as ExtendedDye;
     } else {
-      // 通常のカララントもすべて直接パレット設定（フィルター状態を変更しない）
-      setPaletteDirectly(favorite.primaryDye, favorite.suggestedDyes, favorite.pattern);
+      primaryDye = favorite.primaryDye;
     }
+    
+    // イベントを発火してパレットを復元
+    emitRestorePalette({
+      primaryDye,
+      suggestedDyes: favorite.suggestedDyes,
+      pattern: favorite.pattern,
+    });
   } catch (error) {
     console.error('お気に入りの復元に失敗しました:', error);
     throw error;

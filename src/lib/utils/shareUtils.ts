@@ -7,11 +7,11 @@ import type {
   ExtendedSharePaletteData,
 } from '$lib/types';
 import { getPatternLabel } from '$lib/constants/patterns';
-import { setPaletteDirectly } from '$lib/stores/selection';
 import { isCustomDye } from '$lib/utils/customColorUtils';
 import { rgbToHsv, rgbToHex } from '$lib/utils/colorConversion';
 import LZString from 'lz-string';
 import { rgbToOklab } from './colorConversion';
+import { emitRestorePalette } from '$lib/stores/paletteEvents';
 
 // セキュリティ定数
 const MAX_QUERY_LENGTH = 2048; // URLクエリパラメータの最大長
@@ -274,7 +274,12 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
         }
 
         // ストアに設定
-        setPaletteDirectly(customDye, [secondaryDye1, secondaryDye2], customData.pt);
+        // イベントを発火してパレットを復元
+        emitRestorePalette({
+          primaryDye: customDye,
+          suggestedDyes: [secondaryDye1, secondaryDye2],
+          pattern: customData.pt,
+        });
 
         // URLパラメータをクリーンアップ
         const url = new URL(window.location.href);
@@ -306,7 +311,12 @@ export function restorePaletteFromUrl(dyes: Dye[]): boolean {
     }
 
     // ストアに設定（保存された提案色をそのまま復元）
-    setPaletteDirectly(primaryDye, [secondaryDye1, secondaryDye2], data.pt);
+    // イベントを発火してパレットを復元
+    emitRestorePalette({
+      primaryDye,
+      suggestedDyes: [secondaryDye1, secondaryDye2],
+      pattern: data.pt,
+    });
 
     // URLパラメータをクリーンアップ
     const url = new URL(window.location.href);

@@ -5,6 +5,7 @@ import { filterStore } from './filter';
 import { dyeStore } from './dyes';
 import { isCustomDye } from '$lib/utils/customColorUtils';
 import { rgbToOklab } from '$lib/utils/colorConversion';
+import { paletteEventBus } from './paletteEvents';
 
 // 選択状態ストア
 export const selectionStore = writable<{
@@ -143,6 +144,17 @@ export function setPaletteDirectly(
     suggestedDyes,
     pattern,
     harmonySeed: Date.now(),
+  });
+}
+
+// パレット復元イベントをリッスン
+if (typeof window !== 'undefined') {
+  paletteEventBus.on('restore-palette', (event) => {
+    setPaletteDirectly(
+      event.data.primaryDye,
+      event.data.suggestedDyes,
+      event.data.pattern
+    );
   });
 }
 
