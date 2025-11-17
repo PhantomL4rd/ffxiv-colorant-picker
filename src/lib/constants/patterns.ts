@@ -19,7 +19,7 @@ export const PATTERN_DESCRIPTIONS: Record<HarmonyPattern, string> = {
   monochromatic: '統一感のある落ち着いた3色',
   similar: '馴染みやすい近い色味の3色',
   contrast: 'はっきりとした対比のある3色',
-  clash: '挑戦的な明暗と彩度の衝突',
+  clash: 'ガウガウ元気になる3色',
 };
 
 // パターンの配列（セレクトボックス用）
