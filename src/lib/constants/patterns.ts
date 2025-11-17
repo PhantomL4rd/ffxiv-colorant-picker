@@ -8,8 +8,7 @@ export const PATTERN_LABELS: Record<HarmonyPattern, string> = {
   monochromatic: '同系色',
   similar: 'ナチュラル',
   contrast: 'コントラスト',
-  vivid: 'ビビッド',
-  muted: 'ミュート',
+  clash: 'クラッシュ',
 };
 
 // パターンの説明
@@ -20,8 +19,7 @@ export const PATTERN_DESCRIPTIONS: Record<HarmonyPattern, string> = {
   monochromatic: '統一感のある落ち着いた3色',
   similar: '馴染みやすい近い色味の3色',
   contrast: 'はっきりとした対比のある3色',
-  vivid: '鮮やかで元気な印象の組み合わせ',
-  muted: '落ち着いた大人っぽい組み合わせ',
+  clash: '挑戦的な明暗と彩度の衝突',
 };
 
 // パターンの配列（セレクトボックス用）
@@ -61,16 +59,60 @@ export const PATTERN_OPTIONS: Array<{
     description: PATTERN_DESCRIPTIONS.contrast,
   },
   {
-    value: 'vivid',
-    label: PATTERN_LABELS.vivid,
-    description: PATTERN_DESCRIPTIONS.vivid,
-  },
-  {
-    value: 'muted',
-    label: PATTERN_LABELS.muted,
-    description: PATTERN_DESCRIPTIONS.muted,
+    value: 'clash',
+    label: PATTERN_LABELS.clash,
+    description: PATTERN_DESCRIPTIONS.clash,
   },
 ];
+
+// グループ化されたパターン配列
+export const GROUPED_PATTERN_OPTIONS = [
+  {
+    groupLabel: '定番の配色',
+    patterns: [
+      {
+        value: 'triadic',
+        label: PATTERN_LABELS.triadic,
+        description: PATTERN_DESCRIPTIONS.triadic,
+      },
+      {
+        value: 'split-complementary',
+        label: PATTERN_LABELS['split-complementary'],
+        description: PATTERN_DESCRIPTIONS['split-complementary'],
+      },
+      {
+        value: 'analogous',
+        label: PATTERN_LABELS.analogous,
+        description: PATTERN_DESCRIPTIONS.analogous,
+      },
+      {
+        value: 'monochromatic',
+        label: PATTERN_LABELS.monochromatic,
+        description: PATTERN_DESCRIPTIONS.monochromatic,
+      },
+      {
+        value: 'similar',
+        label: PATTERN_LABELS.similar,
+        description: PATTERN_DESCRIPTIONS.similar,
+      },
+      {
+        value: 'contrast',
+        label: PATTERN_LABELS.contrast,
+        description: PATTERN_DESCRIPTIONS.contrast,
+      },
+    ],
+  },
+  {
+    groupLabel: '個性派の配色',
+    patterns: [
+      {
+        value: 'clash',
+        label: PATTERN_LABELS.clash,
+        description: PATTERN_DESCRIPTIONS.clash,
+      },
+    ],
+  },
+] as const;
 
 // パターンラベルを取得する関数
 export function getPatternLabel(pattern: HarmonyPattern): string {

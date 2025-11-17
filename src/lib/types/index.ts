@@ -55,8 +55,7 @@ export type HarmonyPattern =
   | 'monochromatic'
   | 'similar'
   | 'contrast'
-  | 'vivid'
-  | 'muted';
+  | 'clash';
 
 // 組み合わせ
 export interface DyeCombination {

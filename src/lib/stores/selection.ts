@@ -107,7 +107,7 @@ export function regenerateSuggestions(): void {
     // カテゴリフィルターは適用せず、メタリック除外のみ適用
     const dyesForSuggestion = getDyesForSuggestion();
 
-    // 新しいシード値を生成（Vivid/Mutedモード時のみ効果的）
+    // 新しいシード値を生成
     const newSeed = Date.now();
 
     const suggested =

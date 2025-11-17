@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Dye, HarmonyPattern } from '$lib/types';
-import { selectPrimaryDye, regenerateSuggestions } from '$lib/stores/selection';
-import { RefreshCw, BookOpenText } from 'lucide-svelte';
+import { selectPrimaryDye } from '$lib/stores/selection';
+import { BookOpenText } from 'lucide-svelte';
 
 interface Props {
   selectedDye: Dye | null;
@@ -14,13 +14,6 @@ const { selectedDye, suggestedDyes, pattern }: Props = $props();
 function handleSuggestedDyeClick(dye: Dye): void {
   selectPrimaryDye(dye);
 }
-
-function handleRegenerate(): void {
-  regenerateSuggestions();
-}
-
-// Vivid/Mutedモードかどうかを判定
-const isRandomMode = $derived(pattern === 'vivid' || pattern === 'muted');
 </script>
 
 <div class="card bg-base-100 shadow-lg">
@@ -104,22 +97,7 @@ const isRandomMode = $derived(pattern === 'vivid' || pattern === 'muted');
             </h4>
           </div>
         </div>
-        
-        <!-- 再生成ボタン（Vivid/Mutedモードの場合のみ） -->
-        {#if isRandomMode}
-          <div class="flex justify-center mt-4">
-            <button
-              type="button"
-              class="btn btn-sm btn-ghost gap-2"
-              onclick={handleRegenerate}
-              title="新しい組み合わせを生成"
-            >
-              <RefreshCw class="w-4 h-4" />
-              再生成
-            </button>
-          </div>
-        {/if}
-        
+
       </div>
     {:else}
       <div class="text-center py-8 text-base-content/50">

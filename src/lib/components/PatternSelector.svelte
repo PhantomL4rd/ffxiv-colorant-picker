@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { HarmonyPattern } from '$lib/types';
-import { PATTERN_OPTIONS } from '$lib/constants/patterns';
+import { GROUPED_PATTERN_OPTIONS, PATTERN_DESCRIPTIONS } from '$lib/constants/patterns';
 
 interface Props {
   selectedPattern: HarmonyPattern;
@@ -23,29 +23,29 @@ function handlePatternChange(event: Event) {
     <span class="label-text font-medium">配色パターン</span>
   </label>
   
-  <select 
+  <select
     id="pattern-selector"
     class="select select-bordered w-full"
     value={selectedPattern}
     onchange={handlePatternChange}
   >
-    {#each PATTERN_OPTIONS as pattern}
-      <option value={pattern.value}>
-        {pattern.label}
-      </option>
+    {#each GROUPED_PATTERN_OPTIONS as group}
+      <optgroup label={group.groupLabel}>
+        {#each group.patterns as pattern}
+          <option value={pattern.value}>
+            {pattern.label}
+          </option>
+        {/each}
+      </optgroup>
     {/each}
   </select>
   
   <!-- 選択中のパターンの説明 -->
-  {#each PATTERN_OPTIONS as pattern}
-    {#if pattern.value === selectedPattern}
-      <div class="label">
-        <span class="label-text-alt text-base-content/70">
-          {pattern.description}
-        </span>
-      </div>
-    {/if}
-  {/each}
+  <div class="label">
+    <span class="label-text-alt text-base-content/70">
+      {PATTERN_DESCRIPTIONS[selectedPattern]}
+    </span>
+  </div>
   
   <!-- メタリック除外チェックボックス -->
   <div class="form-control mt-4">

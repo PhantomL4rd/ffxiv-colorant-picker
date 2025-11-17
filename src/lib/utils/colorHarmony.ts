@@ -1,7 +1,6 @@
 import type { Dye, DyeCandidate, HarmonyPattern, RGBColor } from '$lib/types';
-import { deltaEOklab, hsvToRgb, rgbToOklab, rgbToHex, hexToRgb } from './colorConversion';
+import { deltaEOklab, hsvToRgb, rgbToOklab } from './colorConversion';
 import { selectMonochromaticDyes } from './selector/monochromatic';
-import { generateVividHarmony, generateMutedHarmony } from './vividMuted';
 
 // トライアド（三色配色）- 色相環で120度ずつ離れた色
 export function calculateTriadic(baseHue: number): [number, number] {
@@ -34,6 +33,12 @@ export function calculateSimilar(baseHue: number): [number, number] {
 // コントラスト - 補色関係を含む組み合わせ
 export function calculateContrast(baseHue: number): [number, number] {
   return [(baseHue + 180) % 360, (baseHue + 90) % 360];
+}
+
+// クラッシュ - 補色±30°（挑戦的な配色）
+export function calculateClash(baseHue: number): [number, number] {
+  const complement = (baseHue + 180) % 360;
+  return [(complement - 30 + 360) % 360, (complement + 30) % 360];
 }
 
 // 最も近い色相の染料を見つける
@@ -115,40 +120,7 @@ export function generateSuggestedDyes(
     ).map(c => c.dye) as [Dye, Dye];
   }
 
-  // Vivid/Mutedの場合は専用ロジックを使用
-  if (pattern === 'vivid' || pattern === 'muted') {
-    const baseHex = rgbToHex(primaryDye.rgb);
-    let targetColors: string[];
-
-    if (pattern === 'vivid') {
-      targetColors = generateVividHarmony(baseHex, seed);
-    } else {
-      targetColors = generateMutedHarmony(baseHex, seed);
-    }
-
-    // targetColors[0]はbaseHexと同じなので、[1]と[2]を使用
-    const bridgeHex = targetColors[1];
-    const adventureHex = targetColors[2];
-
-    // HEXからRGBに変換してnearest dyeを検索
-    const bridgeRgb = hexToRgb(bridgeHex);
-    const adventureRgb = hexToRgb(adventureHex);
-
-    // より多様性を保つため、個別に最適な色を検索
-    const availableDyes = allDyes.filter((dye) => dye.id !== primaryDye.id);
-
-    const bridgeMatches = findNearestDyesInOklab([bridgeRgb], availableDyes);
-    const bridgeDye = bridgeMatches.length > 0 ? bridgeMatches[0].dye : availableDyes[0];
-
-    // Adventure色の検索時は、すでに選ばれたbridge色を除外
-    const remainingDyes = availableDyes.filter((dye) => dye.id !== bridgeDye.id);
-    const adventureMatches = findNearestDyesInOklab([adventureRgb], remainingDyes);
-    const adventureDye = adventureMatches.length > 0 ? adventureMatches[0].dye : remainingDyes[0];
-
-    return [bridgeDye, adventureDye];
-  }
-
-  // 従来のロジック（その他のパターン）
+  // 配色パターンに基づいて色相を計算
   let targetHues: [number, number];
 
   switch (pattern) {
@@ -167,11 +139,26 @@ export function generateSuggestedDyes(
     case 'contrast':
       targetHues = calculateContrast(primaryDye.hsv.h);
       break;
+    case 'clash':
+      targetHues = calculateClash(primaryDye.hsv.h);
+      break;
     default:
       targetHues = calculateTriadic(primaryDye.hsv.h);
   }
 
-  const targets = targetHues.map((h) => hsvToRgb({ ...primaryDye.hsv, h }));
+  // Clashパターンの場合は明度・彩度を調整
+  const targets = pattern === 'clash'
+    ? targetHues.map((h, index) => {
+        const adjustedHsv = {
+          h: h,
+          s: index === 0
+            ? Math.min(100, primaryDye.hsv.s + 25)  // 1つ目：彩度+25%
+            : Math.max(0, primaryDye.hsv.s - 10),   // 2つ目：彩度-10%
+          v: index === 0 ? 75 : 30  // 1つ目：明るく、2つ目：暗く
+        };
+        return hsvToRgb(adjustedHsv);
+      })
+    : targetHues.map((h) => hsvToRgb({ ...primaryDye.hsv, h }));
   const nearestDyes = findNearestDyesInOklab(
     targets,
     allDyes.filter((dye) => dye.id !== primaryDye.id)
