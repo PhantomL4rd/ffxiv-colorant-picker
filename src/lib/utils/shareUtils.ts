@@ -17,7 +17,7 @@ import { emitRestorePalette } from '$lib/stores/paletteEvents';
 const MAX_QUERY_LENGTH = 2048; // URLクエリパラメータの最大長
 const MAX_JSON_LENGTH = 10000; // 解凍後JSONの最大長
 const MAX_NAME_LENGTH = 50; // カスタムカラー名の最大長
-const BASE_URL_FOR_SHARE = 'colorant-picker.phantoml4rd.workers.dev/share'
+const BASE_URL_FOR_SHARE = 'https://colorant-picker.phantoml4rd.workers.dev/share';
 
 // 検証ヘルパー関数
 function isValidRgbValue(value: unknown): value is number {
